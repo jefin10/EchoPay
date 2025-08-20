@@ -80,3 +80,34 @@ def SignUp(request):
 def generateUpiId(upiName):
     upi_id = upiName.lower().replace(" ", "") + "@upi"
     return upi_id
+
+
+def searchNumber(request):
+    phoneNumber = request.GET.get('phoneNumber')
+    try:
+        user = User.objects.get(phoneNumber=phoneNumber)
+        return JsonResponse({
+            'upiName': user.upiName,
+            'upiId': user.upiMail,
+            'status': 'success'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found',
+            'status': 'error'
+        }, status=404)
+        
+def searchByUpiId(request):
+    upiId = request.GET.get('upiId')
+    try:
+        user = User.objects.get(upiMail=upiId)
+        return JsonResponse({
+            'upiName': user.upiName,
+            'phoneNumber': user.phoneNumber,
+            'status': 'success'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found',
+            'status': 'error'
+        }, status=404)

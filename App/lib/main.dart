@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'signup_page.dart';
 import 'verify_otp_page.dart';
 import 'voiceToText/voiceToText.dart';
+import 'payToContacts/payToContacts.dart';
+import 'payToPhoneNumber/payToPhonenumber.dart';
+import 'payToUpiId/payToUpiId.dart';
 
 
 void main() {
@@ -414,6 +417,66 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: TextStyle(fontSize: 16),
               ),
             ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>  PayToContactsPage(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              ),
+              child: const Text(
+                'Pay to Contacts',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PayToPhonenumberPage(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                ),
+                child: const Text(
+                  'Pay to Phone Number',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PayToUpiIdPage(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  ),
+                  child: const Text(
+                    'Pay to UPI ID',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
           ],
         ),
       ),

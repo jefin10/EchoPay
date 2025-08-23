@@ -50,13 +50,10 @@ class _SignupPageState extends State<SignupPage> {
       if (response.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isSignedUp', true);
+        await prefs.setString('signedUpPhoneNumber', _phoneController.text);
         Navigator.pushReplacementNamed(
           context,
           '/biometric',
-          // arguments: {
-          //   'fullName': _nameController.text,
-          //   'phoneNumber': _phoneController.text,
-          // },
         );
       } else {
         final data = jsonDecode(response.body);

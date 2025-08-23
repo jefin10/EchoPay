@@ -4,8 +4,10 @@ from django.views.decorators.csrf import csrf_exempt
 from twilio.rest import Client
 from django.conf import settings
 import random
+from decimal import Decimal
 from rest_framework.decorators import api_view
 from .models import User
+from .models import UserAccount,Transaction
 # Create your views here.
 
 otp_store = {}
@@ -35,6 +37,14 @@ def verify_otp(request):
         return JsonResponse({"status": "Verified"})
     return JsonResponse({"status": "Failed"})
 
+def login(upiName, phoneNumber):
+
+    return JsonResponse({
+        'upiName': upiName,
+        'phoneNumber': phoneNumber,
+        'status': 'success'
+    })
+
 @api_view(['POST'])
 def SignUp(request):
     upiName = request.data.get('upiName')
@@ -42,10 +52,8 @@ def SignUp(request):
     
     try:
         upiNameTaken= User.objects.get(upiName=upiName)
-        return JsonResponse({
-            'error': 'UPI Name already exists',
-            'status': 'error'
-        }, status=400)
+        if(upiNameTaken.phoneNumber==phoneNumber):
+            return login(upiName,phoneNumber)
     except User.DoesNotExist:
         pass
     try:
@@ -68,6 +76,16 @@ def SignUp(request):
             'error': str(e),
             'status': 'error'
         }, status=500)
+    
+    try:
+        user_account = UserAccount.objects.create(user=user)
+        user_account.save()
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'status': 'error'
+        }, status=500)
+    
     
     return JsonResponse({
         'upiName': upiName,
@@ -109,5 +127,219 @@ def searchByUpiId(request):
     except User.DoesNotExist:
         return JsonResponse({
             'error': 'User not found',
+            'status': 'error'
+        }, status=404)
+        
+def getProfile(request):
+    phoneNumber = request.GET.get('phoneNumber')
+    try:
+        user = User.objects.get(phoneNumber=phoneNumber)
+        return JsonResponse({
+            'upiName': user.upiName,
+            'upiId': user.upiMail,
+            'status': 'success'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found',
+            'status': 'error'
+        }, status=404)
+
+
+def getBalance(request):
+    phoneNumber = request.GET.get('phoneNumber')
+    try:
+        user = User.objects.get(phoneNumber=phoneNumber)
+        user_account = UserAccount.objects.get(user=user)
+        return JsonResponse({
+            'balance': str(user_account.balance),
+            'status': 'success'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'User account not found',
+            'status': 'error'
+        }, status=404)
+
+@csrf_exempt
+@api_view(['POST'])
+def sendMoneyId(request):
+    sender_phone = request.data.get('senderPhone')
+    receiver_upi = request.data.get('receiverUpi')
+    amount = Decimal(str(request.data.get('amount')))
+    
+    try:
+        sender = User.objects.get(phoneNumber=sender_phone)
+        sender_account = UserAccount.objects.get(user=sender)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'Sender not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'Sender account not found',
+            'status': 'error'
+        }, status=404)
+    
+    try:
+        receiver = User.objects.get(upiMail=receiver_upi)
+        receiver_account = UserAccount.objects.get(user=receiver)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'Receiver not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'Receiver account not found',
+            'status': 'error'
+        }, status=404)
+    
+    if sender_account.balance < amount:
+        return JsonResponse({
+            'error': 'Insufficient balance',
+            'status': 'error'
+        }, status=400)
+    sender_account.balance = sender_account.balance - amount
+    receiver_account.balance = receiver_account.balance + amount
+    sender_account.save()
+    receiver_account.save()
+    
+    try:
+        transaction = Transaction.objects.create(
+            sender=sender_account,
+            receiver=receiver_account,
+            amount=amount,
+            status='completed'
+        )
+        transaction.save()
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'status': 'error'
+        }, status=500)
+    
+    return JsonResponse({
+        'message': f'Successfully sent {amount} to {receiver.upiName}',
+        'status': 'success'
+    })
+
+@api_view(['POST'])
+def sendMoneyPhone(request):
+    sender_phone = request.data.get('senderPhone')
+    receiver_phone = request.data.get('receiverPhone')
+    amount = Decimal(str(request.data.get('amount')))
+    
+    try:
+        sender = User.objects.get(phoneNumber=sender_phone)
+        sender_account = UserAccount.objects.get(user=sender)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'Sender not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'Sender account not found',
+            'status': 'error'
+        }, status=404)
+    
+    try:
+        receiver = User.objects.get(phoneNumber=receiver_phone)
+        receiver_account = UserAccount.objects.get(user=receiver)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'Receiver not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'Receiver account not found',
+            'status': 'error'
+        }, status=404)
+    
+    if sender_account.balance < amount:
+        return JsonResponse({
+            'error': 'Insufficient balance',
+            'status': 'error'
+        }, status=400)
+    sender_account.balance = sender_account.balance - amount
+    receiver_account.balance = receiver_account.balance + amount
+    sender_account.save()
+    receiver_account.save()
+    
+    try:
+        transaction = Transaction.objects.create(
+            sender=sender_account,
+            receiver=receiver_account,
+            amount=amount,
+            status='completed'
+        )
+        transaction.save()
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'status': 'error'
+        }, status=500)
+    
+    return JsonResponse({
+        'message': f'Successfully sent {amount} to {receiver.upiName}',
+        'status': 'success'
+    })
+
+@api_view(['POST'])
+def getTransactions(request):
+    phoneNumber = request.data.get('phoneNumber')
+    try:
+        user = User.objects.get(phoneNumber=phoneNumber)
+        user_account = UserAccount.objects.get(user=user)
+        sent_transactions = Transaction.objects.filter(sender=user_account).values('receiver__user__upiName', 'amount', 'timestamp', 'status')
+        received_transactions = Transaction.objects.filter(receiver=user_account).values('sender__user__upiName', 'amount', 'timestamp', 'status')
+        
+        transactions = {
+            'sent': list(sent_transactions),
+            'received': list(received_transactions)
+        }
+        
+        return JsonResponse({
+            'transactions': transactions,
+            'status': 'success'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'User account not found',
+            'status': 'error'
+        }, status=404)
+
+@api_view(['GET'])        
+def checkHasAccount(request):
+    phoneNumber = request.GET.get('phoneNumber')
+    print('here')
+    try:
+        user = User.objects.get(phoneNumber=phoneNumber)
+        user_account = UserAccount.objects.get(user=user)
+        return JsonResponse({
+            'hasAccount': True,
+            'status': 'success'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'hasAccount': False,
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'hasAccount': False,
             'status': 'error'
         }, status=404)

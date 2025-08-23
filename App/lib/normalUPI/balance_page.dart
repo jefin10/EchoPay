@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class BalancePage extends StatefulWidget {
   const BalancePage({super.key});
@@ -8,7 +11,53 @@ class BalancePage extends StatefulWidget {
 }
 
 class _BalancePageState extends State<BalancePage> {
-  double _currentBalance = 15000.50;
+  double _currentBalance = 10.0;
+  bool _isLoading = true;
+  String? _error;
+  @override
+  void initState() {
+    super.initState();
+    _fetchBalance();
+  }
+
+  Future<void> _fetchBalance() async {
+    final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = prefs.getString('signedUpPhoneNumber');
+    print(phoneNumber);
+    if (phoneNumber != null) {
+      try {
+        final url = Uri.parse('http://10.0.2.2:8000/accounts/getBalance?phoneNumber=$phoneNumber');
+        final response = await http.get(url);
+        print(response.body);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          print(data);
+          setState(() {
+            _currentBalance = double.tryParse(data['balance'].toString()) ?? 100.0;
+            _isLoading = false;
+            _error = null;
+          });
+        }
+        else {
+          setState(() {
+            _isLoading = false;
+            _error = 'Failed to fetch balance: ${response.statusCode}';
+          });
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Error: $e';
+        });
+      }
+    }
+    else {
+      setState(() {
+        _isLoading = false;
+        _error = 'Phone number not found.';
+      });
+    }
+  }
   bool _isBalanceVisible = true;
 
   final List<Map<String, dynamic>> _accounts = [
@@ -28,7 +77,7 @@ class _BalancePageState extends State<BalancePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+  return Scaffold(
       backgroundColor: const Color(0xFF1A1B3A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -90,6 +139,33 @@ class _BalancePageState extends State<BalancePage> {
   }
 
   Widget _buildMainBalanceCard() {
+    if (_isLoading) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    if (_error != null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(25),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF6366F1),
+              Color(0xFF8B5CF6),
+              Color(0xFFA855F7),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(25),
+        ),
+        child: Text(
+          _error!,
+          style: const TextStyle(color: Colors.white, fontSize: 18),
+        ),
+      );
+    }
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(25),

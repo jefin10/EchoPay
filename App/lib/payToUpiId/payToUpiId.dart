@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class PayToUpiIdPage extends StatefulWidget {
@@ -106,14 +107,36 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
     });
 
     try {
-      // TODO: Implement actual payment processing
-      await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-      
-      setState(() {
-        _loading = false;
-      });
+      // Get sender phone number from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final senderPhone = prefs.getString('signedUpPhoneNumber') ?? '';
+      final receiverUpi = _upiController.text.trim();
+      final remark = _remarkController.text.trim();
 
-      _showPaymentSuccessDialog();
+      final url = Uri.parse('http://10.0.2.2:8000/accounts/sendMoneyId/');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'senderPhone': senderPhone,
+          'receiverUpi': receiverUpi,
+          'amount': amount,
+          'remark': remark,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _loading = false;
+        });
+        _showPaymentSuccessDialog();
+      } else {
+        setState(() {
+          _loading = false;
+        });
+        final data = json.decode(response.body);
+        _showSnackBar(data['error'] ?? 'Payment failed.');
+      }
     } catch (e) {
       setState(() {
         _loading = false;

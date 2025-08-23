@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,13 +22,40 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _loadUserData() async {
-    // Load user data from SharedPreferences or API
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userName = prefs.getString('userName') ?? 'John Doe';
-      _userPhone = prefs.getString('userPhone') ?? '+91 9876543210';
-      _userUPI = prefs.getString('userUPI') ?? 'john.doe@paytm';
-    });
+    final phoneNumber = prefs.getString('signedUpPhoneNumber');
+    if (phoneNumber != null) {
+      try {
+        final response = await Uri.parse('http://10.0.2.2:8000/accounts/getProfile/?phoneNumber=$phoneNumber');
+        final res = await http.get(response);
+        if (res.statusCode == 200) {
+          final data = jsonDecode(res.body);
+          setState(() {
+            _userName = data['upiName'] ?? 'Unknown';
+            _userPhone = phoneNumber;
+            _userUPI = data['upiId'] ?? 'Unknown';
+          });
+        } else {
+          setState(() {
+            _userName = 'Unknown';
+            _userPhone = phoneNumber;
+            _userUPI = 'Unknown';
+          });
+        }
+      } catch (e) {
+        setState(() {
+          _userName = 'Unknown';
+          _userPhone = phoneNumber;
+          _userUPI = 'Unknown';
+        });
+      }
+    } else {
+      setState(() {
+        _userName = 'John Doe';
+        _userPhone = 'Couldnt find the logged in Number';
+        _userUPI = 'john.doe@paytm';
+      });
+    }
   }
 
   Future<void> _logout() async {

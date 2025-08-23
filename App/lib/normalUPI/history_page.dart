@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -10,45 +13,79 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage> {
   String _selectedFilter = 'All';
   final List<String> _filters = ['All', 'Sent', 'Received', 'Failed'];
+  List<Map<String, dynamic>> _transactions = [];
+  bool _loading = true;
+  String? _error;
 
-  final List<Map<String, dynamic>> _transactions = [
-    {
-      'id': 'TXN001',
-      'type': 'sent',
-      'amount': 500.00,
-      'recipient': 'John Doe',
-      'date': '2024-01-15',
-      'time': '2:30 PM',
-      'status': 'completed',
-    },
-    {
-      'id': 'TXN002',
-      'type': 'received',
-      'amount': 1200.00,
-      'recipient': 'Sarah Wilson',
-      'date': '2024-01-14',
-      'time': '11:45 AM',
-      'status': 'completed',
-    },
-    {
-      'id': 'TXN003',
-      'type': 'sent',
-      'amount': 750.00,
-      'recipient': 'Mike Johnson',
-      'date': '2024-01-13',
-      'time': '9:15 AM',
-      'status': 'failed',
-    },
-    {
-      'id': 'TXN004',
-      'type': 'sent',
-      'amount': 2000.00,
-      'recipient': 'Emma Davis',
-      'date': '2024-01-12',
-      'time': '6:20 PM',
-      'status': 'completed',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchTransactions();
+  }
+
+  Future<void> _fetchTransactions() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('signedUpPhoneNumber');
+      if (phoneNumber == null) {
+        setState(() {
+          _loading = false;
+          _error = 'Phone number not found.';
+        });
+        return;
+      }
+      final url = Uri.parse('http://10.0.2.2:8000/accounts/getTransactions/');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phoneNumber': phoneNumber}),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        List<Map<String, dynamic>> txs = [];
+        for (var tx in data['transactions']['sent']) {
+          txs.add({
+            'type': 'sent',
+            'recipient': tx['receiver__user__upiName'],
+            'amount': double.tryParse(tx['amount'].toString()) ?? 0.0,
+            'date': tx['timestamp']?.split('T')[0] ?? '',
+            'time': tx['timestamp']?.split('T').length > 1 ? tx['timestamp'].split('T')[1].substring(0,5) : '',
+            'status': tx['status'] ?? '',
+            'id': '',
+          });
+        }
+        for (var tx in data['transactions']['received']) {
+          txs.add({
+            'type': 'received',
+            'recipient': tx['sender__user__upiName'],
+            'amount': double.tryParse(tx['amount'].toString()) ?? 0.0,
+            'date': tx['timestamp']?.split('T')[0] ?? '',
+            'time': tx['timestamp']?.split('T').length > 1 ? tx['timestamp'].split('T')[1].substring(0,5) : '',
+            'status': tx['status'] ?? '',
+            'id': '',
+          });
+        }
+        setState(() {
+          _transactions = txs;
+          _loading = false;
+        });
+      } else {
+        setState(() {
+          _loading = false;
+          _error = 'Failed to fetch transactions.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _error = 'Error: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,18 +111,17 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Filter Tabs
-          _buildFilterTabs(),
-          const SizedBox(height: 20),
-
-          // Transaction List
-          Expanded(
-            child: _buildTransactionList(),
-          ),
-        ],
-      ),
+      body: _loading
+          ? Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!, style: TextStyle(color: Colors.red)))
+              : Column(
+                  children: [
+                    _buildFilterTabs(),
+                    const SizedBox(height: 20),
+                    Expanded(child: _buildTransactionList()),
+                  ],
+                ),
     );
   }
 

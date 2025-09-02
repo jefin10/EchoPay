@@ -1,0 +1,854 @@
+text, intent
+send 500 to mobile number 9912381230, transfer_money 
+use upi to send 250 to dad, transfer_money
+i need to pay ravi 250 via upi, transfer_money
+do i have money for a 500 purchase, check_balance
+request for money, request_money 
+i need to transfer 1500 to arjun via upi, transfer_money
+send 500, transfer_money
+send money to jefin upi, transfer_money
+check account balance, check_balance
+current balance, check_balance
+i need to check my balance, check_balance
+balance please, check_balance
+start a new money request, request_money
+collect money from dad, request_money
+balance check please, check_balance
+kitna balance hai, check_balance
+it's a request for 250 from dad, request_money
+transfer 5000 to priya, transfer_money
+alright show me my balance, check_balance
+nudge priya for 2000, request_money
+do i have enough money, check_balance
+nudge arjun for 750, request_money
+can you get 5000 from mom, request_money
+fetch my current balance, check_balance
+make a payment to jefin, transfer_money
+i'd like to ask mom for 250, request_money
+ping dad for payment, request_money
+i need a balance update, check_balance
+i need to pay dad 250 via upi, transfer_money
+could you fetch my account balance, check_balance
+how much money is left, check_balance
+request for money, request_money
+i want to pay anu ybl 100, transfer_money
+make a payment to anu, transfer_money
+i would like to make a balance enquiry, check_balance
+what is my remaining balance, check_balance
+debit my account for 100 and send to dad, transfer_money
+i'd like to transfer 750 to jefin using upi, transfer_money
+could you send 2000 to priya for me, transfer_money
+can i afford 250, check_balance
+ask ravi for 250, request_money
+show me my balance, check_balance
+i need to get paid 750 by mom, request_money
+balance please, check_balance
+current balance, check_balance
+wire 750 to arjun, transfer_money
+send 2000 to mom, transfer_money
+ping jefin for 1000, request_money
+what is my upi account balance, check_balance
+show me my balance, check_balance
+tell me the numbers, check_balance
+bill mom for 2000, request_money
+balance kitna hai, check_balance
+initiate a money request for 750 from priya, request_money
+pay 500 to ravi, transfer_money
+balance check please, check_balance
+send ravi a bill for 2000, request_money
+how much can i spend, check_balance
+send money to ravi, transfer_money
+remind ravi to send me 1000, request_money
+is there enough money in my account, check_balance
+please provide my account balance, check_balance
+pay arjun, transfer_money
+send 750 to mobile number 9876543210, transfer_money
+remind jefin to send me 5000, request_money
+balance please, check_balance
+request 1000 from the number 9912381230, request_money
+how much can i spend, check_balance
+let me know my balance, check_balance
+from ravi please get 250, request_money
+i need to transfer 750 rupees, transfer_money
+reveal my balance, check_balance
+am i broke, check_balance
+provide balance details, check_balance
+ ask jefin to pay 2000, request_money
+let me know my balance, check_balance
+check funds, check_balance
+what's my balance, check_balance
+ send 500 to priya, transfer_money
+i want to send 2000 to dad, transfer_money
+ok check my balance now, check_balance
+payment to mom 250, transfer_money
+i need to transfer 500 to jefin via upi, transfer_money
+do i have money for a 500 purchase, check_balance
+make a upi payment of 1000 to mom, transfer_money
+i need a balance update, check_balance
+what is my upi account balance, check_balance
+how much funds are available, check_balance
+ok send 1500 to anu, transfer_money
+what is the available limit, check_balance
+fetch my current balance, check_balance
+i need to transfer 1000 rupees, transfer_money
+i need money from mom, request_money
+i'm expecting 100 from mom send a request, request_money
+start a new transaction, transfer_money
+i'd like to give ravi 1000, transfer_money
+request 100 from the number 9876543210, request_money
+is my balance sufficient, check_balance
+i want to pay anu 2000 through upi, transfer_money
+i would like to make a balance enquiry, check_balance
+my payment to dad is 250, transfer_money
+please provide my account balance, check_balance
+collect 1000 from dad, request_money
+i need to make a payment, transfer_money
+send 1000 to arjun using upi, transfer_money
+check funds, check_balance
+what's the total amount in my account, check_balance
+tell priya to send me 5000, request_money
+i need to make a payment, transfer_money
+what is the balance in my account, check_balance
+balance enquiry, check_balance
+could you please request 5000 from anu, request_money
+i'm expecting 1500 from jefin send a request, request_money
+i'd like to transfer 250 to arjun using upi, transfer_money
+show me my balance, check_balance
+what's my balance, check_balance
+ask for money from ravi, request_money
+balance check please, check_balance
+check account balance, check_balance
+request for money, request_money
+i'd like to transfer 1500 to anu using upi, transfer_money
+send 250, transfer_money
+start a request for 1500 from mom, request_money
+alright show me my balance, check_balance
+transfer to mom, transfer_money
+can i afford 250, check_balance
+give me a balance report, check_balance
+transfer 5000 to sam icici, transfer_money
+please provide my account balance, check_balance
+tell jefin to send me 5000, request_money
+mere account me kitne paise hain, check_balance
+check account balance, check_balance
+shoot 500 over to jefin, transfer_money
+how much funds are available, check_balance
+pay anu, transfer_money
+start a request for 5000 from dad, request_money
+available balance, check_balance
+i need to check my balance, check_balance
+9876543210 number se 1500 maango, request_money
+alright ask ravi to pay 2000, request_money
+account ka balance batao, check_balance
+alright ask dad to pay 2000, request_money
+mom se 2000 maango, request_money
+ask for 1500 from ravi okhdfc, request_money
+what is my remaining balance, check_balance
+tell mom to send me 5000, request_money
+show me my balance, check_balance
+to this number 9912381230 pay 1500, transfer_money
+how much funds are available, check_balance
+ok request 1500 from priya, request_money
+check account balance, check_balance
+ask for 1500 from upi id ravi okhdfc, request_money
+current balance, check_balance
+request money from upi handle anu ybl, request_money
+start a new transaction, transfer_money
+send money to anu, transfer_money
+make a upi payment of 100 to dad, transfer_money
+can you please transfer 1500 to priya, transfer_money
+ask for 1000 from upi id sam icici, request_money
+what's the damage, check_balance
+request a payment of 250 from priya, request_money
+check upi balance, check_balance
+i need to get paid 500 by arjun, request_money
+request a payment of 2000 from mom, request_money
+let's get 2000 from anu, request_money
+how much money do i have, check_balance
+balance kitna hai, check_balance
+send priya a bill for 250, request_money
+display my balance, check_balance
+arjun se 500 maango, request_money
+send a upi request to ravi for 1500, request_money
+is upi id jefin upi se 5000 request karo, request_money
+what's my balance, check_balance
+i need to transfer 1500 to mom via upi, transfer_money
+pay 2000, transfer_money
+pay the number 9876543210 1500, transfer_money
+can you get 5000 from ravi, request_money
+start a request for 500 from priya, request_money
+show me my balance, check_balance
+request a payment of 1000 from dad, request_money
+financial overview, check_balance
+do i have enough money, check_balance
+send a payment request to dad for 100, request_money
+transfer to dad, transfer_money
+please ask mom for 500 rupees, request_money
+could you send 5000 to mom for me, transfer_money
+am i broke, check_balance
+check funds, check_balance
+is there enough money in my account, check_balance
+ok request 750 from dad, request_money
+send 5000 to anu through upi, transfer_money
+balance please, check_balance
+how much can i spend, check_balance
+what's the damage, check_balance
+new payment to priya for 250, transfer_money
+transfer 100 to dad using upi, transfer_money
+can you ping ravi for a payment of 1000, request_money
+available balance, check_balance
+i have to pay priya 250, transfer_money
+ping anu for payment, request_money
+it's time to pay jefin 1500, transfer_money
+how much do i have in my account, check_balance
+kitna balance hai, check_balance
+the amount is 1500 send it to priya, transfer_money
+send money to ravi okhdfc, transfer_money
+is there enough money in my account, check_balance
+show me the money, check_balance
+what's my financial status, check_balance
+i need a balance update, check_balance
+what is the balance in my account, check_balance
+5000 to mom, transfer_money
+request money from upi handle anu ybl, request_money
+send 5000 to priya using upi, transfer_money
+tell me the numbers, check_balance
+verify my account balance, check_balance
+get money from mom, request_money
+am i broke, check_balance
+money request from mom for 750, request_money
+send 750 to dad through upi, transfer_money
+arjun se 1500 lene hai, request_money
+send a payment request to mom for 250, request_money
+let's ask ravi for 250, request_money
+request for money, request_money
+verify my account balance, check_balance
+zap 500 to ravi okhdfc, transfer_money
+i need to invoice arjun for 1000, request_money
+start a new money request, request_money
+make a payment of 5000, transfer_money
+account ka balance batao, check_balance
+ping ravi for 1000, request_money
+send some money to anu say 5000, transfer_money
+tell me the numbers, check_balance
+could you send 2000 to arjun for me, transfer_money
+ok send 2000 to jefin, transfer_money
+i want to know my balance, check_balance
+ok check my balance now, check_balance
+tell me the numbers, check_balance
+available balance, check_balance
+arjun se 1000 maango, request_money
+is upi id anu ybl se 250 request karo, request_money
+what's the damage, check_balance
+arjun se 1500 request karo, request_money
+i need money from jefin, request_money
+display my balance, check_balance
+jefin se 2000 request karo, request_money
+give me a balance report, check_balance
+i'd like to transfer 250 to mom using upi, transfer_money
+what are my available funds, check_balance
+i want to send 1500 to priya via upi, transfer_money
+debit my account for 2000 and send to dad, transfer_money
+how's my account looking, check_balance
+pay 5000, transfer_money
+i need to check my balance, check_balance
+can i afford 1000, check_balance
+i am owed 1500 by ravi please request it, request_money
+check if i can pay 100, check_balance
+request for money, request_money
+make a payment to ravi, transfer_money
+check my savings balance, check_balance
+i need to transfer 500 rupees, transfer_money
+transfer 5000 to sam icici, transfer_money
+i need to check my balance, check_balance
+can you please transfer 1500 to priya, transfer_money
+request via upi from anu an amount of 1500, request_money
+could you send 1000 to ravi for me, transfer_money
+i want to send 1000 to jefin, transfer_money
+send arjun a reminder for 2000, request_money
+authorize a payment of 1500 to priya, transfer_money
+authorize a payment of 750 to ravi, transfer_money
+formally request 750 from ravi, request_money
+how much money is left, check_balance
+debit 5000 and credit to mom, transfer_money
+i need money from ravi, request_money
+request 250 from jefin, request_money
+i need to transfer 1500 to ravi via upi, transfer_money
+balance check please, check_balance
+on this number 9876543210 send 100, transfer_money
+please provide my account balance, check_balance
+ping mom for payment, request_money
+i'd like to ask ravi for 750, request_money
+let's ask arjun for 1500, request_money
+100 to jefin, transfer_money
+do i have enough money, check_balance
+i want to send 250 to anu via upi, transfer_money
+i need money from mom, request_money
+get 2000 from 9912381230, request_money
+tell dad to send me 1000, request_money
+alright ask jefin to pay 500, request_money
+start a request for 750 from arjun, request_money
+provide balance details, check_balance
+transfer 500 to the phone number 9876543210, transfer_money
+request a payment of 100 from arjun, request_money
+paise kitne bache hain, check_balance
+pay via upi to ravi okhdfc, transfer_money
+ask for 250 from upi id anu ybl, request_money
+what's my balance, check_balance
+provide balance details, check_balance
+ask for 750 from jefin upi, request_money
+priya se 250 maango, request_money
+send a payment request to priya for 250, request_money
+send 750 to anu through upi, transfer_money
+please provide my account balance, check_balance
+pay 5000 to this number 9876543210, transfer_money
+could you fetch my account balance, check_balance
+get 5000 from ravi, request_money
+send a upi request to priya for 100, request_money
+alright ask anu to pay 1500, request_money
+reveal my balance, check_balance
+transfer to arjun, transfer_money
+request money from priya, request_money
+send a payment request for 100 to the phone number 9912381230, request_money
+i want to collect 500 from dad, request_money
+the amount is 750 send it to arjun, transfer_money
+get money from arjun, request_money
+send a due notification of 1000 to dad, request_money
+mom se 250 lene hai, request_money
+make a upi payment of 750 to mom, transfer_money
+get money from jefin, request_money
+i want to pay dad 5000 through upi, transfer_money
+tell ravi to send me 500, request_money
+for ravi okhdfc transfer 2000, transfer_money
+ok check my balance now, check_balance
+shoot 5000 over to jefin, transfer_money
+you need to ask jefin to pay me 1000, request_money
+how much money is left, check_balance
+send 1500 to upi id sam icici, transfer_money
+i need to make a payment, transfer_money
+shoot 1500 over to mom, transfer_money
+request karo 750 arjun se, request_money
+for ravi please send 100, transfer_money
+remit 1500 to ravi, transfer_money
+i'm expecting 100 from ravi send a request, request_money
+provide balance details, check_balance
+can you check my balance, check_balance
+what's in the bank, check_balance
+bill ravi for 1500, request_money
+balance kitna hai, check_balance
+i need to get paid 250 by jefin, request_money
+dad owes me 750 send a request, request_money
+i want to send 2000 to priya, transfer_money
+i wanna check my balance, check_balance
+i would like to make a balance enquiry, check_balance
+nudge dad for 100, request_money
+remind anu to send me 1500, request_money
+for priya please send 2000, transfer_money
+i need to make a payment of 250 to arjun, transfer_money
+to anu send 2000, transfer_money
+get my balance, check_balance
+ask for money from arjun, request_money
+invoice priya for 750, request_money
+request a payment of 500 from jefin, request_money
+it's time to pay anu 250, transfer_money
+start a request for 500 from priya, request_money
+send a payment request to ravi, request_money
+i want to pay jefin upi 1000, transfer_money
+request money from mom, request_money
+display my balance, check_balance
+i have to pay jefin 1000, transfer_money
+nudge jefin for 250, request_money
+latest balance, check_balance
+i would like to make a balance enquiry, check_balance
+balance please, check_balance
+give mom 250 rupees, transfer_money
+this upi id jefin upi pay 1500 rupees, transfer_money
+formally request 750 from mom, request_money
+initiate a transfer of 1000 to mom, transfer_money
+current balance, check_balance
+ask arjun for 100, request_money
+send money to jefin upi, transfer_money
+ravi owes me 100 send a request, request_money
+send 250 to ravi through upi, transfer_money
+i am owed 100 by mom please request it, request_money
+i want to pay sam icici 250, transfer_money
+kitna balance hai, check_balance
+initiate a money request for 500 from priya, request_money
+pay mom, transfer_money
+let me know my balance, check_balance
+i wanna check my balance, check_balance
+send 2000 to upi id sam icici, transfer_money
+send a payment request to dad, request_money
+please provide my account balance, check_balance
+check upi balance, check_balance
+send a payment request to priya, request_money
+start a new money request, request_money
+please ask dad for 250 rupees, request_money
+make a payment of 750, transfer_money
+the amount is 750 send it to priya, transfer_money
+i need to request 1500 from mom, request_money
+could you send 1500 to ravi for me, transfer_money
+give me a balance report, check_balance
+start a new money request, request_money
+what's in the bank, check_balance
+pay the number 9123456789 250, transfer_money
+dad se 100 request karo, request_money
+send 5000 to jefin, transfer_money
+tell ravi to send me 500, request_money
+initiate a transfer of 5000 to jefin, transfer_money
+pay anu, transfer_money
+send money to ravi okhdfc, transfer_money
+i need to transfer 2000 rupees, transfer_money
+my payment to ravi is 250, transfer_money
+request for money, request_money
+i want to send money, transfer_money
+pay 1500 to this number 9912381230, transfer_money
+what are my available funds, check_balance
+send 5000 to upi id anu ybl, transfer_money
+ping ravi for 100, request_money
+kitna balance hai, check_balance
+request 500 from dad, request_money
+i'd like to ask ravi for 1500, request_money
+start a new transaction, transfer_money
+how's my account looking, check_balance
+collect 750 from arjun, request_money
+check if i can pay 5000, check_balance
+start a new transaction, transfer_money
+ask for money from mom, request_money
+please ask mom for 250 rupees, request_money
+i'd like to give priya 500, transfer_money
+i need to send money to ravi, transfer_money
+pay the number 9123456789 100, transfer_money
+what is my upi account balance, check_balance
+zap 750 to ravi okhdfc, transfer_money
+ask for money from dad, request_money
+kitna balance hai, check_balance
+initiate a transfer of 1000 to ravi, transfer_money
+what is the balance in my account, check_balance
+ping jefin for payment, request_money
+i wanna check my balance, check_balance
+tell me the numbers, check_balance
+start a new money request, request_money
+what is my upi account balance, check_balance
+display my balance, check_balance
+remit 5000 to mom, transfer_money
+kitna balance hai, check_balance
+mom se 750 request karo, request_money
+reveal my balance, check_balance
+it's time to pay dad 1000, transfer_money
+what are my available funds, check_balance
+my payment to arjun is 250, transfer_money
+let's see my balance, check_balance
+the amount is 5000 send it to arjun, transfer_money
+send 250, transfer_money
+credit 5000 to anu's account, transfer_money
+could you please request 2000 from ravi, request_money
+what's my balance, check_balance
+send a payment request for 750 to the phone number 9123456789, request_money
+
+i want to pay jefin upi 5000, transfer_money
+use upi to send 1000 to arjun, transfer_money
+send 750, transfer_money
+i'd like to transfer 2000 to anu using upi, transfer_money
+remit 1500 to arjun, transfer_money
+send a payment request to arjun, request_money
+request karo 250 ravi se, request_money
+request 250 from the number 9123456789, request_money
+my payment to mom is 1000, transfer_money
+initiate a money request for 1000 from ravi, request_money
+arjun owes me 250 send a request, request_money
+verify my account balance, check_balance
+how much can i spend, check_balance
+transfer 250 to jefin using upi, transfer_money
+tell me my account balance, check_balance
+i need a balance update, check_balance
+send money to mom, transfer_money
+request 100 from dad, request_money
+i wanna check my balance, check_balance
+balance please, check_balance
+start a new transaction, transfer_money
+remit 2000 to jefin, transfer_money
+is my balance sufficient, check_balance
+available balance, check_balance
+can you check my balance, check_balance
+i'd like to ask ravi for 100, request_money
+shoot 2000 over to anu, transfer_money
+use upi to send 2000 to mom, transfer_money
+give priya 1000 rupees, transfer_money
+you need to ask priya to pay me 5000, request_money
+send 250 to upi id anu ybl, transfer_money
+pay the number 9123456789 250, transfer_money
+generate a payment request for arjun of 100, request_money
+check funds, check_balance
+send a payment request for 750 to the phone number 9912381230, request_money
+balance check please, check_balance
+give arjun 1000 rupees, transfer_money
+use upi to send 100 to priya, transfer_money
+let's see my balance, check_balance
+request for money, request_money
+i want to pay dad 750 through upi, transfer_money
+make a payment to ravi, transfer_money
+what is the available limit, check_balance
+pay 250 to mom, transfer_money
+tell me my account balance, check_balance
+how much money is left, check_balance
+transfer 5000 to sam icici, transfer_money
+is my balance sufficient, check_balance
+check if i can pay 1500, check_balance
+arjun se 100 lene hai, request_money
+is my balance sufficient, check_balance
+i need to transfer 500 rupees, transfer_money
+get 5000 from 9876543210, request_money
+request a payment of 750 from mom, request_money
+i want to send 5000 to priya, transfer_money
+how much do i have in my account, check_balance
+how much can i spend, check_balance
+it's a request for 1000 from ravi, request_money
+pay 250, transfer_money
+is upi id anu ybl se 100 request karo, request_money
+i need a balance update, check_balance
+use upi to send 2000 to mom, transfer_money
+pay arjun, transfer_money
+nudge jefin for 1500, request_money
+i want to send 2000 to jefin via upi, transfer_money
+you need to ask priya to pay me 500, request_money
+send a payment request to ravi, request_money
+transfer 1000 to mom using upi, transfer_money
+what's my balance, check_balance
+tell me my account balance, check_balance
+i want to send 2000 to anu, transfer_money
+reveal my balance, check_balance
+bill jefin for 1500, request_money
+debit 2000 and credit to priya, transfer_money
+ask for money from dad, request_money
+ask for money from mom, request_money
+i want to collect 2000 from ravi, request_money
+dad se 100 request karo, request_money
+anu se paise maang lo, request_money
+balance check please, check_balance
+i need to ask for money, request_money
+verify my account balance, check_balance
+upi payment of 1500 to jefin upi, transfer_money
+send 250 to jefin using upi, transfer_money
+please send mom 1500, transfer_money
+give jefin 1500 rupees, transfer_money
+provide balance details, check_balance
+what's my balance, check_balance
+request 5000 from the number 9123456789, request_money
+account ka balance batao, check_balance
+ping ravi for payment, request_money
+remit 500 to jefin, transfer_money
+it's time to pay priya 1000, transfer_money
+new payment to jefin for 5000, transfer_money
+arjun se 100 request karo, request_money
+i need to send money to 9912381230, transfer_money
+what's my balance, check_balance
+check upi balance, check_balance
+what's my financial status, check_balance
+kitna balance hai, check_balance
+pay 2000 to this upi id ravi okhdfc, transfer_money
+make a payment to anu, transfer_money
+start a request for 2000 from anu, request_money
+latest balance, check_balance
+how much funds are available, check_balance
+i need to pay priya 100 via upi, transfer_money
+give ravi 250 rupees, transfer_money
+what is the available limit, check_balance
+send money to dad, transfer_money
+send 500 to upi id ravi okhdfc, transfer_money
+how much can i spend, check_balance
+get money from anu, request_money
+i want to collect 500 from arjun, request_money
+money request from jefin for 250, request_money
+i wanna check my balance, check_balance
+i need to invoice anu for 2000, request_money
+send money to ravi okhdfc, transfer_money
+start a request for 1000 from dad, request_money
+i'd like to transfer 250 to dad using upi, transfer_money
+kitna balance hai, check_balance
+use upi to send 1000 to arjun, transfer_money
+current balance, check_balance
+create a request for 100 to be paid by dad, request_money
+what is my remaining balance, check_balance
+what's in the bank, check_balance
+how much do i have in my account, check_balance
+mere account me kitne paise hain, check_balance
+request 1500 from ravi, request_money
+transfer 100 to sam icici, transfer_money
+zap 250 to jefin upi, transfer_money
+how much money do i have, check_balance
+show me the money, check_balance
+tell me my account balance, check_balance
+pay 1000 to this number 9912381230, transfer_money
+make a payment of 100, transfer_money
+tell me the numbers, check_balance
+debit 250 and credit to dad, transfer_money
+could you please request 750 from mom, request_money
+use upi to send 750 to anu, transfer_money
+ping mom for 1000, request_money
+send money to anu ybl, transfer_money
+money transfer, transfer_money
+is upi id sam icici se 500 request karo, request_money
+new payment to jefin for 100, transfer_money
+i wanna check my balance, check_balance
+upi payment of 5000 to sam icici, transfer_money
+do i have enough money, check_balance
+start a request for 1000 from priya, request_money
+initiate a transfer of 5000 to priya, transfer_money
+what's my balance, check_balance
+send a payment request to priya for 5000, request_money
+what is the balance in my account, check_balance
+what's my financial status, check_balance
+is upi id sam icici se 100 request karo, request_money
+start a new transaction, transfer_money
+check if i can pay 1000, check_balance
+i need to get paid 2000 by jefin, request_money
+mom se 5000 request karo, request_money
+transfer 2000 to dad, transfer_money
+account ka balance batao, check_balance
+send money to sam icici, transfer_money
+fetch my current balance, check_balance
+can you ping jefin for a payment of 100, request_money
+i need to pay mom 1500 via upi, transfer_money
+it's time to pay ravi 100, transfer_money
+do i have enough money, check_balance
+provide balance details, check_balance
+bill anu for 2000, request_money
+account ka balance batao, check_balance
+get 1500 from 9912381230, request_money
+pay the number 9123456789 5000, transfer_money
+make a payment of 1000, transfer_money
+send 750 to mom using upi, transfer_money
+initiate a transfer of 750 to ravi, transfer_money
+how's my account looking, check_balance
+money request from mom for 100, request_money
+request 750 from jefin, request_money
+reveal my balance, check_balance
+transfer 100 to the phone number 9123456789, transfer_money
+request 1500 from arjun, request_money
+give me a balance report, check_balance
+shoot 500 over to dad, transfer_money
+could you fetch my account balance, check_balance
+money transfer, transfer_money
+invoice arjun for 1000, request_money
+formally request 5000 from ravi, request_money
+ask for 5000 from upi id jefin upi, request_money
+make a payment to anu, transfer_money
+i'd like to transfer 5000 to priya using upi, transfer_money
+paise kitne bache hain, check_balance
+check upi balance, check_balance
+is there enough money in my account, check_balance
+collect money from arjun, request_money
+money request from ravi for 100, request_money
+i want to know my balance, check_balance
+shoot 5000 over to mom, transfer_money
+i need to send money to priya, transfer_money
+send a payment request to priya for 250, request_money
+can you ping jefin for a payment of 2000, request_money
+tell me the numbers, check_balance
+i want to know my balance, check_balance
+current balance, check_balance
+tell me the numbers, check_balance
+i want to send money, transfer_money
+i want to send 5000 to mom, transfer_money
+check account balance, check_balance
+collect money from ravi, request_money
+how much money do i have, check_balance
+let's ask jefin for 750, request_money
+i have to pay ravi 250, transfer_money
+pay 2000, transfer_money
+250 to priya, transfer_money
+can you get 500 from anu, request_money
+make a upi payment of 1000 to priya, transfer_money
+balance status, check_balance
+can you check my balance, check_balance
+zap 250 to ravi okhdfc, transfer_money
+
+send 1500 to mom using upi, transfer_money
+provide balance details, check_balance
+provide balance details, check_balance
+what are my available funds, check_balance
+give mom 250 rupees, transfer_money
+give anu 5000 rupees, transfer_money
+pay mom, transfer_money
+start a request for 2000 from mom, request_money
+check upi balance, check_balance
+get 100 from 9876543210, request_money
+request money from upi handle ravi okhdfc, request_money
+how much money do i have, check_balance
+i'd like to check my balance, check_balance
+upi payment of 2000 to jefin upi, transfer_money
+transfer 2000 to sam icici, transfer_money
+tell me my account balance, check_balance
+9876543210 number se 1500 maango, request_money
+fetch my current balance, check_balance
+transfer to dad, transfer_money
+arjun se 250 maango, request_money
+can you please transfer 100 to jefin, transfer_money
+show me the money, check_balance
+i want to collect 5000 from anu, request_money
+do i have money for a 500 purchase, check_balance
+send a due notification of 2000 to jefin, request_money
+i need to get paid 1000 by dad, request_money
+transfer to arjun, transfer_money
+nudge mom for 5000, request_money
+what's in the bank, check_balance
+what are my available funds, check_balance
+i want to pay ravi 5000 through upi, transfer_money
+please provide my account balance, check_balance
+
+i need to get paid 2000 by dad, request_money
+create a request for 1500 to be paid by ravi, request_money
+can you please transfer 2000 to anu, transfer_money
+zap 250 to ravi okhdfc, transfer_money
+display my balance, check_balance
+start a request for 2000 from arjun, request_money
+give arjun 1000 rupees, transfer_money
+let's see my balance, check_balance
+balance status, check_balance
+get 5000 from arjun, request_money
+request money from upi handle ravi okhdfc, request_money
+request 2000 from arjun, request_money
+could you fetch my account balance, check_balance
+i wanna check my balance, check_balance
+i need to send money to 9876543210, transfer_money
+
+what's my financial status, check_balance
+new payment to anu for 1000, transfer_money
+balance please, check_balance
+can you ping ravi for a payment of 1000, request_money
+how much can i spend, check_balance
+get my balance, check_balance
+make a upi payment of 2000 to mom, transfer_money
+request a payment of 5000 from priya, request_money
+am i broke, check_balance
+is upi id ravi okhdfc se 2000 request karo, request_money
+get my balance, check_balance
+request 750 from the number 9912381230, request_money
+send money to jefin upi, transfer_money
+bill mom for 750, request_money
+i'd like to transfer 1500 to jefin using upi, transfer_money
+balance enquiry, check_balance
+i need to send money to 9876543210, transfer_money
+kitna balance hai, check_balance
+what's the total amount in my account, check_balance
+request money from upi handle sam icici, request_money
+can you please transfer 2000 to priya, transfer_money
+request money from priya, request_money
+send 1500 to jefin using upi, transfer_money
+my balance, check_balance
+ask jefin for 2000, request_money
+balance status, check_balance
+tell me my account balance, check_balance
+i want to collect 750 from priya, request_money
+account ka balance batao, check_balance
+wire 2000 to anu, transfer_money
+provide balance details, check_balance
+send a payment request to jefin, request_money
+request money from anu, request_money
+do i have enough money, check_balance
+pay the number 9123456789 100, transfer_money
+i have to pay dad 5000, transfer_money
+i need to get paid 250 by mom, request_money
+i'd like to transfer 500 to anu using upi, transfer_money
+i need to invoice ravi for 250, request_money
+ping arjun for payment, request_money
+mere account me kitne paise hain, check_balance
+request karo 100 arjun se, request_money
+how's my account looking, check_balance
+make a upi payment of 250 to arjun, transfer_money
+send a payment request to ravi, request_money
+ok request 500 from jefin, request_money
+send a payment request for 2000 to the phone number 9876543210, request_money
+how's my account looking, check_balance
+you need to ask arjun to pay me 2000, request_money
+financial overview, check_balance
+financial overview, check_balance
+i want to pay anu ybl 5000, transfer_money
+please ask anu for 750 rupees, request_money
+can you ping anu for a payment of 5000, request_money
+do i have money for a 500 purchase, check_balance
+is there enough money in my account, check_balance
+can you ping anu for a payment of 100, request_money
+i need to ask for money, request_money
+new payment to ravi for 100, transfer_money
+payment to ravi 2000, transfer_money
+it's a request for 500 from jefin, request_money
+what's my balance, check_balance
+transfer 1000 to ravi, transfer_money
+i need to request 2000 from priya, request_money
+use upi to send 250 to priya, transfer_money
+dad se paise maang lo, request_money
+balance enquiry, check_balance
+i need to transfer 2000 rupees, transfer_money
+i have to pay ravi 1000, transfer_money
+i need money from jefin, request_money
+show me my balance, check_balance
+request via upi from mom an amount of 1500, request_money
+i want to send money, transfer_money
+send a upi request to arjun for 5000, request_money
+ok request 100 from priya, request_money
+tell me my account balance, check_balance
+for sam icici transfer 750, transfer_money
+i'm expecting 2000 from anu send a request, request_money
+i want to send 250 to arjun via upi, transfer_money
+how much money is left, check_balance
+bill arjun for 100, request_money
+from ravi I need 750, request_money
+get 5000 from priya, request_money
+get my balance, check_balance
+it's a request for 2000 from arjun, request_money
+could you send 1500 to jefin for me, transfer_money
+what's my balance, check_balance
+request money from dad, request_money
+mere account me kitne paise hain, check_balance
+financial overview, check_balance
+get money from priya, request_money
+can you please transfer 1500 to priya, transfer_money
+let's get this payment done 100 to mom, transfer_money
+am i broke, check_balance
+pay the number 9876543210 500, transfer_money
+mom owes me 1000 send a request, request_money
+ask for 2000 from upi id jefin upi, request_money
+the amount is 750 request it from jefin, request_money
+give me a balance report, check_balance
+current balance, check_balance
+send some money to priya say 5000, transfer_money
+create a request for 500 to be paid by arjun, request_money
+you need to ask arjun to pay me 500, request_money
+what is my remaining balance, check_balance
+2000 from priya please request, request_money
+invoice dad for 5000, request_money
+what's my financial status, check_balance
+please provide my account balance, check_balance
+pay this number 9123456789, transfer_money
+request 1500 from dad, request_money
+what's my balance, check_balance
+get my balance, check_balance
+request for money, request_money
+available balance, check_balance
+this upi id ravi okhdfc pay 1000 rupees, transfer_money
+financial overview, check_balance
+i want to pay arjun 500 through upi, transfer_money
+debit my account for 100 and send to priya, transfer_money
+send money to anu, transfer_money
+send a due notification of 100 to priya, request_money
+let's get this payment done 2000 to jefin, transfer_money
+get 100 from mom, request_money
+please provide my account balance, check_balance
+i need to ask for money, request_money
+anu se 1000 maango, request_money
+please provide my account balance, check_balance
+i want to know my balance, check_balance
+ask for 2000 from upi id sam icici, request_money
+alright pay arjun 1000, transfer_money
+ask for money from ravi, request_money
+my balance, check_balance
+5000 to dad, transfer_money
+
+transfer 1500 to dad, transfer_money
+get 2000 from 9912381230, request_money
+check funds, check_balance
+generate a payment request for jefin of 100, request_money
+i would like to make a balance enquiry, check_balance
+start a new money request, request_money

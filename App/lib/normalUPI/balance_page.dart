@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../constants/api_constants.dart';
 
 class BalancePage extends StatefulWidget {
   const BalancePage({super.key});
@@ -26,7 +27,7 @@ class _BalancePageState extends State<BalancePage> {
     print(phoneNumber);
     if (phoneNumber != null) {
       try {
-        final url = Uri.parse('http://10.0.2.2:8000/accounts/getBalance?phoneNumber=$phoneNumber');
+        final url = Uri.parse('$GET_BALANCE_URL?phoneNumber=$phoneNumber');
         final response = await http.get(url);
         print(response.body);
         if (response.statusCode == 200) {

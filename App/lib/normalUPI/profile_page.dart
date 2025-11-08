@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../constants/api_constants.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -26,7 +27,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final phoneNumber = prefs.getString('signedUpPhoneNumber');
     if (phoneNumber != null) {
       try {
-        final response = await Uri.parse('http://10.0.2.2:8000/accounts/getProfile/?phoneNumber=$phoneNumber');
+        final response = await Uri.parse('$GET_PROFILE_URL?phoneNumber=$phoneNumber');
         final res = await http.get(response);
         if (res.statusCode == 200) {
           final data = jsonDecode(res.body);

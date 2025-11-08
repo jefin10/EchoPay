@@ -3,6 +3,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../constants/api_constants.dart';
 
 class MyQRPage extends StatefulWidget {
   const MyQRPage({super.key});
@@ -50,7 +51,7 @@ class _MyQRPageState extends State<MyQRPage> {
 
   Future<void> _fetchUserProfile(String phoneNumber) async {
     try {
-      final url = Uri.parse('http://10.0.2.2:8000/accounts/getProfile/?phoneNumber=$phoneNumber');
+      final url = Uri.parse('$GET_PROFILE_URL?phoneNumber=$phoneNumber');
       final response = await http.get(url);
       
       if (response.statusCode == 200) {

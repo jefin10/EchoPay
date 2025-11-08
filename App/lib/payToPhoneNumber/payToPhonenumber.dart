@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constants/api_constants.dart';
 
 class PayToPhonenumberPage extends StatelessWidget {
   const PayToPhonenumberPage({Key? key}) : super(key: key);
@@ -103,7 +104,7 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
     }
     try {
       // TODO: Replace with your actual backend URL
-      final url = Uri.parse('http://10.0.2.2:8000/accounts/searchPhonenumber/?phoneNumber=$phoneNumber');
+      final url = Uri.parse('$SEARCH_BY_PHONE_URL?phoneNumber=$phoneNumber');
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -144,7 +145,7 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
       final senderPhone = prefs.getString('signedUpPhoneNumber') ?? '';
       final receiverPhone = _controller.text.trim();
       final remark = _remarkController.text.trim();
-      final url = Uri.parse('http://10.0.2.2:8000/accounts/sendMoneyPhone/');
+      final url = Uri.parse(SEND_MONEY_PHONE_URL);
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../constants/api_constants.dart';
 
 class PayToUpiIdPage extends StatefulWidget {
   final String? prefilledUpiId;
@@ -66,7 +67,7 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
 
     try {
       // TODO: Replace with your actual backend URL
-      final url = Uri.parse('http://10.0.2.2:8000/accounts/searchByUpiId/?upiId=$upiId');
+      final url = Uri.parse('$SEARCH_BY_UPI_URL?upiId=$upiId');
       final response = await http.get(url);
       
       if (response.statusCode == 200) {
@@ -113,7 +114,7 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
       final receiverUpi = _upiController.text.trim();
       final remark = _remarkController.text.trim();
 
-      final url = Uri.parse('http://10.0.2.2:8000/accounts/sendMoneyId/');
+      final url = Uri.parse(SEND_MONEY_ID_URL);
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},

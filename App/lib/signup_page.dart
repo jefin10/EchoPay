@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'constants/api_constants.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -37,7 +38,7 @@ class _SignupPageState extends State<SignupPage> {
         _error = null;
       });
       final response = await http.post(
-        Uri.parse('http://172.16.192.54:8000/accounts/signup/'),
+        Uri.parse(SIGNUP_URL),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'upiName': _nameController.text,

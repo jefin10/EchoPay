@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../constants/api_constants.dart';
 
 class RequestMoneyPage extends StatefulWidget {
   const RequestMoneyPage({super.key});
@@ -43,7 +44,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage>
       final phoneNumber = prefs.getString('signedUpPhoneNumber');
       
       if (phoneNumber != null) {
-        final url = Uri.parse('http://10.0.2.2:8000/accounts/getMoneyRequests/?phoneNumber=$phoneNumber');
+        final url = Uri.parse('$GET_REQUESTS_URL?phoneNumber=$phoneNumber');
         final response = await http.get(url);
         
         if (response.statusCode == 200) {
@@ -78,7 +79,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage>
       final prefs = await SharedPreferences.getInstance();
       final phoneNumber = prefs.getString('signedUpPhoneNumber');
       
-      final url = Uri.parse('http://10.0.2.2:8000/accounts/updateRequestStatus/');
+      final url = Uri.parse(UPDATE_REQUEST_URL);
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -610,7 +611,7 @@ class _RequestMoneyDialogState extends State<RequestMoneyDialog> {
       final prefs = await SharedPreferences.getInstance();
       final requesterPhone = prefs.getString('signedUpPhoneNumber');
       
-      final url = Uri.parse('http://10.0.2.2:8000/accounts/createMoneyRequest/');
+      final url = Uri.parse(CREATE_REQUEST_URL);
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},

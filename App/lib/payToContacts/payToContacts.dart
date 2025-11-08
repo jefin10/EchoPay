@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constants/api_constants.dart';
 
 class PayToContactsPage extends StatefulWidget {
   @override
@@ -111,7 +112,7 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                               } else if (phoneNumber.startsWith('91')) {
                                 phoneNumber = phoneNumber.substring(2);
                               }
-                              final checkUrl = Uri.parse('http://10.0.2.2:8000/accounts/checkHasAccount/?phoneNumber=$phoneNumber');
+                              final checkUrl = Uri.parse('$CHECK_ACCOUNT_URL?phoneNumber=$phoneNumber');
                               final checkResponse = await http.get(checkUrl);
                               if (checkResponse.statusCode == 200) {
                                 final checkData = json.decode(checkResponse.body);
@@ -241,7 +242,7 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                     }
                     final prefs = await SharedPreferences.getInstance();
                     final senderPhone = prefs.getString('signedUpPhoneNumber') ?? '';
-                    final sendUrl = Uri.parse('http://10.0.2.2:8000/accounts/sendMoneyPhone/');
+                    final sendUrl = Uri.parse(SEND_MONEY_PHONE_URL);
                     final sendResponse = await http.post(
                       sendUrl,
                       headers: {'Content-Type': 'application/json'},

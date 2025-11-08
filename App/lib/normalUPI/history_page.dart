@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../constants/api_constants.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -38,7 +39,7 @@ class _HistoryPageState extends State<HistoryPage> {
         });
         return;
       }
-      final url = Uri.parse('http://10.0.2.2:8000/accounts/getTransactions/');
+      final url = Uri.parse(GET_TRANSACTIONS_URL);
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},

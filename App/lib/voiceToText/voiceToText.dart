@@ -133,29 +133,44 @@ class _SpeechScreenState extends State<SpeechScreen> {
       // Use the enhanced voice command processing
       final result = await IntentService.processVoiceCommand(text);
       
-      if (result != null && result['status'] == 'success') {
+      if (result['status'] == 'success') {
+        final intent = result['intent'];
+        final action = result['action'];
+        final message = result['message'];
+        
         setState(() {
-          _predictedIntent = result['predicted_intent'];
-          _intentConfidence = result['confidence'];
-          _assistantResponse = result['assistant_message'];
-          _entities = result['entities'];
+          _predictedIntent = intent;
+          _intentConfidence = result['confidence']?.toDouble() ?? 0.0;
+          _assistantResponse = message;
           _isProcessing = false;
         });
         
-        // Show success snackbar for successful operations
-        if (result['action'] != 'general_conversation') {
-          _showSnackBar(_assistantResponse ?? 'Operation completed successfully!', Colors.green);
+        // Handle different actions
+        if (action == 'initiate_transfer') {
+          // Show confirmation dialog for money transfer
+          _showTransferConfirmation(result['data']);
+        } else if (action == 'show_balance') {
+          _showSnackBar(message, Colors.blue);
+          // Navigate to balance page
+          // Navigator.pushNamed(context, '/balance');
+        } else if (action == 'initiate_request') {
+          _showRequestConfirmation(result['data']);
+        } else {
+          _showSnackBar(message, Colors.green);
         }
         
       } else {
+        final message = result['message'] ?? 'Failed to process command';
+        final missing = result['missing'];
+        
         setState(() {
-          _errorMessage = result?['error'] ?? 'Failed to process command';
-          _assistantResponse = result?['assistant_message'] ?? 'Sorry, I could not process your request.';
+          _errorMessage = message;
+          _assistantResponse = message;
           _isProcessing = false;
         });
         
-        // Show error snackbar
-        _showSnackBar(_errorMessage ?? 'Processing failed', Colors.red);
+        // Show error or missing info message
+        _showSnackBar(message, missing != null ? Colors.orange : Colors.red);
       }
     } catch (e) {
       setState(() {
@@ -164,9 +179,240 @@ class _SpeechScreenState extends State<SpeechScreen> {
         _isProcessing = false;
       });
       
-      // Show error snackbar
       _showSnackBar('Connection error: $e', Colors.red);
     }
+  }
+  
+  /// Show confirmation dialog for money transfer
+  void _showTransferConfirmation(Map<String, dynamic> data) {
+    final amount = data['amount'];
+    final recipient = data['recipient'];
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2A2B5A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Confirm Transfer',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Send ₹$amount to $recipient?',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Voice Command:',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                _text,
+                style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _executeMoneyTransfer(data);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Confirm & Send'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
+  /// Show confirmation dialog for money request
+  void _showRequestConfirmation(Map<String, dynamic> data) {
+    final amount = data['amount'];
+    final recipient = data['recipient'];
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2A2B5A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Confirm Request',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'Request ${amount != null ? "₹$amount" : "money"} from ${recipient ?? "someone"}?',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _executeMoneyRequest(data);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF59E0B),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Send Request'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
+  /// Execute money transfer (simulated)
+  Future<void> _executeMoneyTransfer(Map<String, dynamic> data) async {
+    final amount = data['amount'];
+    final recipient = data['recipient'];
+    
+    // Show loading
+    setState(() {
+      _isProcessing = true;
+      _assistantResponse = 'Processing transfer...';
+    });
+    
+    // Simulate API call delay
+    await Future.delayed(const Duration(seconds: 2));
+    
+    // Show success message
+    setState(() {
+      _isProcessing = false;
+      _assistantResponse = '✓ Successfully sent ₹$amount to $recipient!';
+    });
+    
+    _showSuccessDialog(
+      'Payment Successful!',
+      '₹$amount sent to $recipient',
+    );
+  }
+  
+  /// Execute money request (simulated)
+  Future<void> _executeMoneyRequest(Map<String, dynamic> data) async {
+    final amount = data['amount'];
+    final recipient = data['recipient'];
+    
+    // Show loading
+    setState(() {
+      _isProcessing = true;
+      _assistantResponse = 'Sending request...';
+    });
+    
+    // Simulate API call delay
+    await Future.delayed(const Duration(seconds: 1));
+    
+    // Show success message
+    setState(() {
+      _isProcessing = false;
+      _assistantResponse = '✓ Money request sent to ${recipient ?? "contact"}!';
+    });
+    
+    _showSnackBar(
+      'Request sent for ${amount != null ? "₹$amount" : "money"}',
+      Colors.green,
+    );
+  }
+  
+  /// Show success dialog
+  void _showSuccessDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2A2B5A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check_circle,
+                color: Color(0xFF10B981),
+                size: 60,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Done'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showSnackBar(String message, Color backgroundColor) {

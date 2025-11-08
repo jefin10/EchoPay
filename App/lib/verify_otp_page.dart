@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'constants/api_constants.dart';
 
 class VerifyOtpPage extends StatefulWidget {
   final String fullName;
@@ -26,7 +27,7 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> {
       _info = null;
     });
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/accounts/send_otp?phone=${widget.phoneNumber}'),
+      Uri.parse('$SEND_OTP_URL?phone=${widget.phoneNumber}'),
     );
     setState(() {
       _isSending = false;
@@ -48,7 +49,7 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> {
       _error = null;
     });
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/accounts/verify_otp?phone=${widget.phoneNumber}&otp=${_otpController.text}'),
+      Uri.parse('$VERIFY_OTP_URL?phone=${widget.phoneNumber}&otp=${_otpController.text}'),
     );
     setState(() {
       _isVerifying = false;

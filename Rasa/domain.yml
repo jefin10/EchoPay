@@ -1,0 +1,55 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - bot_challenge
+  - ask_app_features
+  - ask_voice_upi
+  - ask_voice_payment_steps
+  - ask_manual_upi
+  - ask_upi_safety
+  - ask_transaction_limits
+  - ask_help
+  - fallback
+
+responses:
+
+  utter_greet:
+    - text: "Hello. Welcome to the voice enabled UPI app. How can I help you?"
+
+  utter_goodbye:
+    - text: "Thank you for using the voice UPI app. Goodbye."
+
+  utter_iamabot:
+    - text: "I am an automated voice assistant designed to help you with this UPI app."
+
+  utter_app_features:
+    - text: "This app supports voice based UPI payments, regular UPI payments, and hands free assistance for common queries."
+
+  utter_voice_upi:
+    - text: "Voice UPI allows you to send money by speaking commands instead of typing."
+
+  utter_voice_payment_steps:
+    - text: "To make a voice payment, clearly say the recipient name and amount. The app will ask for confirmation before proceeding."
+
+  utter_manual_upi:
+    - text: "Yes. You can use this app like a regular UPI app without using voice commands."
+
+  utter_upi_safety:
+    - text: "The app uses secure UPI protocols, device level security, and confirmation steps to keep your transactions safe."
+
+  utter_transaction_limits:
+    - text: "Transaction limits depend on UPI guidelines and your bank settings."
+
+  utter_help:
+    - text: "You can ask about app features, voice payments, security, or how to use voice commands."
+
+  utter_fallback:
+    - text: "Sorry, I did not understand that. Please try again or ask for help."
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

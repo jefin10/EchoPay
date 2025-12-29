@@ -1,0 +1,58 @@
+version: "3.1"
+
+stories:
+
+- story: greet user
+  steps:
+    - intent: greet
+    - action: utter_greet
+
+- story: app features
+  steps:
+    - intent: ask_app_features
+    - action: utter_app_features
+
+- story: voice upi explanation
+  steps:
+    - intent: ask_voice_upi
+    - action: utter_voice_upi
+
+- story: voice payment steps
+  steps:
+    - intent: ask_voice_payment_steps
+    - action: utter_voice_payment_steps
+
+- story: manual upi usage
+  steps:
+    - intent: ask_manual_upi
+    - action: utter_manual_upi
+
+- story: security information
+  steps:
+    - intent: ask_upi_safety
+    - action: utter_upi_safety
+
+- story: transaction limits
+  steps:
+    - intent: ask_transaction_limits
+    - action: utter_transaction_limits
+
+- story: help
+  steps:
+    - intent: ask_help
+    - action: utter_help
+
+- story: bot identity
+  steps:
+    - intent: bot_challenge
+    - action: utter_iamabot
+
+- story: exit
+  steps:
+    - intent: goodbye
+    - action: utter_goodbye
+
+- story: fallback handling
+  steps:
+    - intent: fallback
+    - action: utter_fallback

@@ -1,0 +1,111 @@
+version: "3.1"
+
+nlu:
+
+# -------- BASIC CONVERSATION --------
+
+- intent: greet
+  examples: |
+    - hello
+    - hi
+    - hey
+    - good morning
+    - good evening
+    - namaste
+    - hello app
+    - hi there
+
+- intent: goodbye
+  examples: |
+    - bye
+    - exit
+    - stop
+    - close app
+    - quit
+    - goodbye
+
+- intent: affirm
+  examples: |
+    - yes
+    - yeah
+    - correct
+    - confirm
+    - proceed
+    - okay
+
+- intent: deny
+  examples: |
+    - no
+    - cancel
+    - stop that
+    - do not proceed
+    - wrong
+
+- intent: bot_challenge
+  examples: |
+    - are you a bot
+    - am I talking to a bot
+    - are you human
+
+# -------- APP INFORMATION --------
+
+- intent: ask_app_features
+  examples: |
+    - what can this app do
+    - what are the features
+    - tell me about this app
+    - how does this app work
+    - explain the app
+
+- intent: ask_voice_upi
+  examples: |
+    - what is voice upi
+    - how does voice upi work
+    - explain voice based payment
+    - what is voice payment
+
+- intent: ask_voice_payment_steps
+  examples: |
+    - how do I make a payment using voice
+    - how to pay using voice
+    - steps for voice upi payment
+    - how can I send money by voice
+
+- intent: ask_manual_upi
+  examples: |
+    - can I use normal upi
+    - does this support manual upi
+    - can I pay without voice
+    - normal upi payment available
+
+- intent: ask_upi_safety
+  examples: |
+    - is this app safe
+    - is voice upi secure
+    - how secure is this app
+    - is my money safe
+    - can someone misuse voice upi
+
+- intent: ask_transaction_limits
+  examples: |
+    - what is the transaction limit
+    - maximum amount I can send
+    - upi limit
+    - daily transaction limit
+
+# -------- NON-TRANSACTIONAL HELP --------
+
+- intent: ask_help
+  examples: |
+    - help
+    - I need help
+    - what can I say
+    - available commands
+    - how to use voice commands
+
+- intent: fallback
+  examples: |
+    - I don't understand
+    - something else
+    - random words
+    - gibberish

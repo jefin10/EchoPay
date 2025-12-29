@@ -161,3 +161,9 @@ This project is open source and available under the MIT License.
 ---
 
 **Built with ❤️ for voice-enabled UPI transactions**
+
+
+ANDROID_EMULATOR_DISABLE_VULKAN=1 \
+__NV_PRIME_RENDER_OFFLOAD=1 \
+__GLX_VENDOR_LIBRARY_NAME=nvidia \
+emulator -avd p9p -gpu host

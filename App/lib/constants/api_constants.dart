@@ -7,8 +7,8 @@
 // - iOS Simulator: use localhost or your IP
 // - Physical Device: use your computer's IP address
 
-const String DJANGO_BASE_URL = 'https://djbackend-tp8n.onrender.com';
-const String INTENT_API_URL = 'https://voiceupiintent.onrender.com';
+const String DJANGO_BASE_URL = 'http://192.168.1.2:8000';
+const String INTENT_API_URL = 'http://192.168.1.2:5000';
 
 // ==================== ENDPOINTS ====================
 

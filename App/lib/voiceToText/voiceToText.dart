@@ -58,7 +58,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
       ),
     ),
   };
-  
+
   late stt.SpeechToText _speech;
   bool _isListening = false;
   bool _speechEnabled = false;
@@ -66,7 +66,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   bool _serverConnected = false;
   String _text = 'Press the button and start speaking';
   double _confidence = 1.0;
-  
+
   // Voice assistant results
   String? _predictedIntent;
   double? _intentConfidence;
@@ -132,62 +132,78 @@ class _SpeechScreenState extends State<SpeechScreen> {
     try {
       // Use the enhanced voice command processing
       final result = await IntentService.processVoiceCommand(text);
-      
+
       if (result['status'] == 'success') {
         final intent = result['intent'];
         final action = result['action'];
         final message = result['message'];
-        
+
         setState(() {
           _predictedIntent = intent;
           _intentConfidence = result['confidence']?.toDouble() ?? 0.0;
           _assistantResponse = message;
           _isProcessing = false;
         });
-        
+
         // Handle different actions
         if (action == 'initiate_transfer') {
           // Show confirmation dialog for money transfer
-          _showTransferConfirmation(result['data']);
+          final data = result['data'];
+          if (data != null) {
+            _showTransferConfirmation(data);
+          } else {
+            _showSnackBar(
+              'Missing transaction details. Please try again.',
+              Colors.orange,
+            );
+          }
         } else if (action == 'show_balance') {
-          _showSnackBar(message, Colors.blue);
+          _showSnackBar(message ?? 'Opening balance page', Colors.blue);
           // Navigate to balance page
           // Navigator.pushNamed(context, '/balance');
         } else if (action == 'initiate_request') {
-          _showRequestConfirmation(result['data']);
+          final data = result['data'];
+          if (data != null) {
+            _showRequestConfirmation(data);
+          } else {
+            _showSnackBar(
+              'Missing request details. Please try again.',
+              Colors.orange,
+            );
+          }
         } else {
-          _showSnackBar(message, Colors.green);
+          _showSnackBar(message ?? 'Command processed', Colors.green);
         }
-        
       } else {
         final message = result['message'] ?? 'Failed to process command';
         final missing = result['missing'];
-        
+
         setState(() {
           _errorMessage = message;
           _assistantResponse = message;
           _isProcessing = false;
         });
-        
+
         // Show error or missing info message
         _showSnackBar(message, missing != null ? Colors.orange : Colors.red);
       }
     } catch (e) {
       setState(() {
         _errorMessage = 'Error: $e';
-        _assistantResponse = 'Sorry, I encountered an error processing your request.';
+        _assistantResponse =
+            'Sorry, I encountered an error processing your request.';
         _isProcessing = false;
       });
-      
+
       _showSnackBar('Connection error: $e', Colors.red);
     }
   }
-  
+
   /// Show confirmation dialog for money transfer
   void _showTransferConfirmation(Map<String, dynamic> data) {
-    final amount = data['amount'];
-    final recipient = data['recipient'];
-    
+    final amount = data['amount'] ?? 0.0;
+    final recipient = data['recipient'] ?? 'Unknown';
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -198,10 +214,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
           ),
           title: const Text(
             'Confirm Transfer',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -209,10 +222,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
             children: [
               Text(
                 'Send ₹$amount to $recipient?',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(color: Colors.white70, fontSize: 16),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -236,10 +246,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.grey),
-              ),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -257,12 +264,12 @@ class _SpeechScreenState extends State<SpeechScreen> {
       },
     );
   }
-  
+
   /// Show confirmation dialog for money request
   void _showRequestConfirmation(Map<String, dynamic> data) {
     final amount = data['amount'];
-    final recipient = data['recipient'];
-    
+    final recipient = data['recipient'] ?? 'someone';
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -273,25 +280,16 @@ class _SpeechScreenState extends State<SpeechScreen> {
           ),
           title: const Text(
             'Confirm Request',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: Text(
-            'Request ${amount != null ? "₹$amount" : "money"} from ${recipient ?? "someone"}?',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
+            'Request ${amount != null ? "₹$amount" : "money"} from $recipient?',
+            style: const TextStyle(color: Colors.white70, fontSize: 16),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.grey),
-              ),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -309,59 +307,56 @@ class _SpeechScreenState extends State<SpeechScreen> {
       },
     );
   }
-  
+
   /// Execute money transfer (simulated)
   Future<void> _executeMoneyTransfer(Map<String, dynamic> data) async {
     final amount = data['amount'];
     final recipient = data['recipient'];
-    
+
     // Show loading
     setState(() {
       _isProcessing = true;
       _assistantResponse = 'Processing transfer...';
     });
-    
+
     // Simulate API call delay
     await Future.delayed(const Duration(seconds: 2));
-    
+
     // Show success message
     setState(() {
       _isProcessing = false;
       _assistantResponse = '✓ Successfully sent ₹$amount to $recipient!';
     });
-    
-    _showSuccessDialog(
-      'Payment Successful!',
-      '₹$amount sent to $recipient',
-    );
+
+    _showSuccessDialog('Payment Successful!', '₹$amount sent to $recipient');
   }
-  
+
   /// Execute money request (simulated)
   Future<void> _executeMoneyRequest(Map<String, dynamic> data) async {
     final amount = data['amount'];
     final recipient = data['recipient'];
-    
+
     // Show loading
     setState(() {
       _isProcessing = true;
       _assistantResponse = 'Sending request...';
     });
-    
+
     // Simulate API call delay
     await Future.delayed(const Duration(seconds: 1));
-    
+
     // Show success message
     setState(() {
       _isProcessing = false;
       _assistantResponse = '✓ Money request sent to ${recipient ?? "contact"}!';
     });
-    
+
     _showSnackBar(
       'Request sent for ${amount != null ? "₹$amount" : "money"}',
       Colors.green,
     );
   }
-  
+
   /// Show success dialog
   void _showSuccessDialog(String title, String message) {
     showDialog(
@@ -393,10 +388,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
             ],
           ),
@@ -454,7 +446,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
   String _formatIntent(String? intent) {
     if (intent == null) return '';
-    
+
     switch (intent.toLowerCase()) {
       case 'transfer_money':
         return 'Money Transfer';
@@ -481,7 +473,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
               color: _serverConnected ? Colors.green : Colors.red,
             ),
             onPressed: _checkServerConnection,
-            tooltip: _serverConnected ? 'Server Connected' : 'Server Disconnected',
+            tooltip: _serverConnected
+                ? 'Server Connected'
+                : 'Server Disconnected',
           ),
         ],
       ),
@@ -512,7 +506,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                   decoration: BoxDecoration(
                     color: Colors.red[50],
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red[300]!),
+                    border: Border.all(color: Colors.red[300] ?? Colors.red),
                   ),
                   child: Row(
                     children: [
@@ -534,9 +528,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Text(
                     'Speech Confidence: ${(_confidence * 100.0).toStringAsFixed(1)}%',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   ),
                 ),
 
@@ -549,7 +543,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(color: Colors.grey[300] ?? Colors.grey),
                 ),
                 child: GestureDetector(
                   onTap: _clearText,
@@ -579,10 +573,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                       const SizedBox(height: 10),
                       Text(
                         'Tap to clear',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[400],
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[400]),
                       ),
                     ],
                   ),
@@ -654,7 +645,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: _getIntentColor(_predictedIntent).withOpacity(0.2),
+                                  color: _getIntentColor(
+                                    _predictedIntent,
+                                  ).withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: _getIntentColor(_predictedIntent),
@@ -673,22 +666,27 @@ class _SpeechScreenState extends State<SpeechScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // Main assistant response
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [Colors.blue[50]!, Colors.blue[25]!],
+                              colors: [
+                                Colors.blue[50] ?? Colors.blue.shade50,
+                                Colors.blue[25] ?? Colors.blue.shade100,
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.blue[200]!),
+                            border: Border.all(
+                              color: Colors.blue[200] ?? Colors.blue,
+                            ),
                           ),
                           child: Text(
-                            _assistantResponse!,
+                            _assistantResponse ?? 'Processing...',
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.blue[800],
@@ -697,25 +695,30 @@ class _SpeechScreenState extends State<SpeechScreen> {
                             ),
                           ),
                         ),
-                        
+
                         // Show entities if available
-                        if (_entities != null && _entities!.isNotEmpty) ...[
+                        if (_entities != null &&
+                            (_entities?.isNotEmpty ?? false)) ...[
                           const SizedBox(height: 16),
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.grey[50],
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey[300]!),
+                              border: Border.all(
+                                color: Colors.grey[300] ?? Colors.grey,
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [
-                                    Icon(Icons.info_outline, 
-                                         size: 16, 
-                                         color: Colors.grey[600]),
+                                    Icon(
+                                      Icons.info_outline,
+                                      size: 16,
+                                      color: Colors.grey[600],
+                                    ),
                                     const SizedBox(width: 6),
                                     Text(
                                       'Extracted Information:',
@@ -731,7 +734,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
                                 Wrap(
                                   spacing: 8,
                                   runSpacing: 6,
-                                  children: _entities!.entries.map((entry) {
+                                  children: (_entities?.entries ?? []).map((
+                                    entry,
+                                  ) {
                                     return Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 10,
@@ -740,7 +745,10 @@ class _SpeechScreenState extends State<SpeechScreen> {
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(color: Colors.grey[300]!),
+                                        border: Border.all(
+                                          color:
+                                              Colors.grey[300] ?? Colors.grey,
+                                        ),
                                       ),
                                       child: Text(
                                         '${entry.key}: ${entry.value}',
@@ -757,18 +765,20 @@ class _SpeechScreenState extends State<SpeechScreen> {
                             ),
                           ),
                         ],
-                        
+
                         // Show confidence if available
                         if (_intentConfidence != null) ...[
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              Icon(Icons.analytics, 
-                                   size: 16, 
-                                   color: Colors.grey[600]),
+                              Icon(
+                                Icons.analytics,
+                                size: 16,
+                                color: Colors.grey[600],
+                              ),
                               const SizedBox(width: 6),
                               Text(
-                                'Confidence: ${(_intentConfidence! * 100).toStringAsFixed(1)}%',
+                                'Confidence: ${((_intentConfidence ?? 0.0) * 100).toStringAsFixed(1)}%',
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 12,
@@ -785,15 +795,15 @@ class _SpeechScreenState extends State<SpeechScreen> {
                                 ),
                                 child: FractionallySizedBox(
                                   alignment: Alignment.centerLeft,
-                                  widthFactor: _intentConfidence,
+                                  widthFactor: _intentConfidence ?? 0.0,
                                   child: Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(2),
-                                      color: _intentConfidence! > 0.7 
-                                          ? Colors.green 
-                                          : _intentConfidence! > 0.5 
-                                              ? Colors.orange 
-                                              : Colors.red,
+                                      color: _intentConfidence! > 0.7
+                                          ? Colors.green
+                                          : _intentConfidence! > 0.5
+                                          ? Colors.orange
+                                          : Colors.red,
                                     ),
                                   ),
                                 ),
@@ -836,7 +846,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: _getIntentColor(_predictedIntent).withOpacity(0.1),
+                            color: _getIntentColor(
+                              _predictedIntent,
+                            ).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: _getIntentColor(_predictedIntent),

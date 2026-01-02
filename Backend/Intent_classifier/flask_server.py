@@ -387,17 +387,26 @@ def process_voice_command():
         # Step 2: Process based on intent following your specified workflow
         if predicted_intent == 'transfer_money':
             print("Processing transfer money request...")
-            # Workflow: intent classifier -> entity -> Django backend -> frontend
+            # Workflow: intent classifier -> entity -> Mock response (Django disabled)
             entities = extract_entities(text, predicted_intent)
-            django_response = process_transfer_money(entities, user_phone)
             
-            if django_response.get('status') == 'success':
-                assistant_message = django_response.get('message', 'Money transfer completed successfully!')
+            # MOCK RESPONSE - Django backend disabled for now
+            if 'amount' in entities:
+                django_response = {
+                    'status': 'success',
+                    'message': f'Mock: Transfer of ₹{entities["amount"]} initiated successfully!'
+                }
+                assistant_message = f'Ready to send ₹{entities["amount"]}'
+                if 'recipient_name' in entities:
+                    assistant_message += f' to {entities["recipient_name"]}'
+                assistant_message += ' (Mock mode - Django disabled)'
             else:
-                assistant_message = django_response.get('error', 'Transfer failed. Please try again.')
-                # Include suggestion if available
-                if 'suggestion' in django_response:
-                    assistant_message += f" {django_response['suggestion']}"
+                django_response = {
+                    'status': 'error',
+                    'error': 'Amount not specified',
+                    'suggestion': 'Try saying: "Send 500 rupees to [name]"'
+                }
+                assistant_message = 'Amount not specified. Please mention the amount to transfer.'
             
             response.update({
                 "entities": entities,
@@ -408,17 +417,26 @@ def process_voice_command():
             
         elif predicted_intent == 'request_money':
             print("Processing request money...")
-            # Workflow: intent classifier -> entity -> Django backend -> frontend
+            # Workflow: intent classifier -> entity -> Mock response (Django disabled)
             entities = extract_entities(text, predicted_intent)
-            django_response = process_request_money(entities, user_phone)
             
-            if django_response.get('status') == 'success':
-                assistant_message = django_response.get('message', 'Money request sent successfully!')
+            # MOCK RESPONSE - Django backend disabled for now
+            if 'amount' in entities:
+                django_response = {
+                    'status': 'success',
+                    'message': f'Mock: Money request for ₹{entities["amount"]} sent!'
+                }
+                assistant_message = f'Request for ₹{entities["amount"]}'
+                if 'recipient_name' in entities:
+                    assistant_message += f' from {entities["recipient_name"]}'
+                assistant_message += ' sent (Mock mode - Django disabled)'
             else:
-                assistant_message = django_response.get('error', 'Request failed. Please try again.')
-                # Include suggestion if available
-                if 'suggestion' in django_response:
-                    assistant_message += f" {django_response['suggestion']}"
+                django_response = {
+                    'status': 'error',
+                    'error': 'Amount not specified',
+                    'suggestion': 'Try saying: "Request 500 from [name]"'
+                }
+                assistant_message = 'Amount not specified. Please mention the amount to request.'
             
             response.update({
                 "entities": entities,
@@ -429,14 +447,12 @@ def process_voice_command():
             
         elif predicted_intent == 'check_balance':
             print("Processing balance check...")
-            # Workflow: intent classifier -> Django backend -> frontend
-            django_response = process_check_balance(user_phone)
-            
-            if django_response.get('status') == 'success':
-                balance = django_response.get('balance', '0')
-                assistant_message = f"Your current balance is ₹{balance}"
-            else:
-                assistant_message = django_response.get('error', 'Unable to fetch balance. Please try again.')
+            # MOCK RESPONSE - Django backend disabled for now
+            django_response = {
+                'status': 'success',
+                'balance': '5000.00'
+            }
+            assistant_message = f"Your current balance is ₹5000.00 (Mock mode - Django disabled)"
             
             response.update({
                 "django_response": django_response,
@@ -579,7 +595,7 @@ if __name__ == '__main__':
     print(f"   ✅ Intent Classifier: Loaded")
     print(f"   {'✅' if chatbot_generator else '❌'} GPT Chatbot: {'Loaded' if chatbot_generator else 'Not Available'}")
     print(f"   {'✅' if nlp else '❌'} NER Model: {'Loaded' if nlp else 'Not Available'}")
-    print(f"   🔗 Django Backend: {DJANGO_BASE_URL}")
+    print(f"   ⚠️  Django Backend: DISABLED (Mock mode)")
     print("=" * 60)
     print("🌐 Server will be available at: http://localhost:5002")
     print("📡 API endpoints:")
@@ -588,10 +604,10 @@ if __name__ == '__main__':
     print("   - POST /chatbot: Direct chatbot access")
     print("   - GET  /health: Health check")
     print("=" * 60)
-    print("🔄 Voice Assistant Workflow:")
-    print("   💰 Transfer Money: Intent → Entity → Django → Response")
-    print("   💸 Request Money: Intent → Entity → Django → Response")
-    print("   💳 Check Balance: Intent → Django → Response")
+    print("🔄 Voice Assistant Workflow (MOCK MODE):")
+    print("   💰 Transfer Money: Intent → Entity → Mock Response")
+    print("   💸 Request Money: Intent → Entity → Mock Response")
+    print("   💳 Check Balance: Intent → Mock Response (₹5000)")
     print("   💬 General Chat: Direct to GPT Chatbot")
     print("=" * 60)
     app.run(host='0.0.0.0', port=5002, debug=True)

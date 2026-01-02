@@ -9,162 +9,122 @@ class IntentService {
   static Future<Map<String, dynamic>> processVoiceCommand(String text) async {
     try {
       print('Processing voice command: $text');
-      
-      // Step 1: Get intent and keywords from Flask server
+
+      // Step 1: Get intent and response from Flask server
       final intentResponse = await predictIntent(text);
-      
+
       if (intentResponse == null || intentResponse['status'] == 'error') {
         return {
           'status': 'error',
-          'message': 'Failed to understand command',
-          'action': 'none'
+          'message':
+              intentResponse?['assistant_message'] ??
+              'Failed to understand command',
+          'action': 'none',
         };
       }
-      
+
       final intent = intentResponse['predicted_intent'];
-      final keywords = intentResponse['keywords'];
       final confidence = intentResponse['confidence_percentage'];
-      
+      final action = intentResponse['action'];
+      final assistantMessage = intentResponse['assistant_message'];
+
       print('Intent: $intent, Confidence: $confidence%');
-      print('Keywords: $keywords');
-      
-      // Step 2: Execute action based on intent
-      if (intent == 'transfer_money') {
-        return await _handleTransferMoney(text, keywords);
-      } else if (intent == 'check_balance') {
+      print('Action: $action');
+
+      // The /voice_command endpoint handles everything and returns ready-to-use data
+      // Check if Django backend returned an error
+      if (intentResponse['django_response'] != null &&
+          intentResponse['django_response']['status'] == 'error') {
+        return {
+          'status': 'error',
+          'intent': intent,
+          'message': assistantMessage ?? 'Failed to process request',
+          'action': action ?? 'error',
+          'confidence': confidence,
+        };
+      }
+
+      // Extract entities if available
+      final entities = intentResponse['entities'];
+
+      // Step 2: Route based on action from backend
+      if (action == 'transfer_money' && entities != null) {
         return {
           'status': 'success',
-          'intent': 'check_balance',
-          'action': 'show_balance',
-          'message': 'Opening balance page',
-          'confidence': confidence
+          'intent': intent,
+          'action': 'initiate_transfer',
+          'message': assistantMessage ?? 'Transfer request',
+          'data': {
+            'amount': entities['amount'],
+            'recipient':
+                entities['recipient_name'] ??
+                entities['phone_number'] ??
+                entities['upi_id'],
+            'original_text': text,
+          },
+          'confidence': confidence,
         };
-      } else if (intent == 'request_money') {
-        return await _handleRequestMoney(text, keywords);
+      } else if (action == 'check_balance') {
+        return {
+          'status': 'success',
+          'intent': intent,
+          'action': 'show_balance',
+          'message': assistantMessage ?? 'Opening balance page',
+          'confidence': confidence,
+        };
+      } else if (action == 'request_money' && entities != null) {
+        return {
+          'status': 'success',
+          'intent': intent,
+          'action': 'initiate_request',
+          'message': assistantMessage ?? 'Request money',
+          'data': {
+            'amount': entities['amount'],
+            'recipient':
+                entities['recipient_name'] ??
+                entities['phone_number'] ??
+                entities['upi_id'],
+            'original_text': text,
+          },
+          'confidence': confidence,
+        };
+      } else if (action == 'general_conversation') {
+        return {
+          'status': 'success',
+          'intent': intent,
+          'action': 'chatbot',
+          'message': assistantMessage ?? 'I\'m here to help!',
+          'confidence': confidence,
+        };
       } else {
         return {
           'status': 'success',
           'intent': intent,
-          'action': 'unknown',
-          'message': 'I understood: $intent, but cannot perform this action yet',
-          'confidence': confidence
+          'action': action ?? 'unknown',
+          'message': assistantMessage ?? 'I understood: $intent',
+          'confidence': confidence,
         };
       }
-      
     } catch (e) {
       print('Error in processVoiceCommand: $e');
       return {
         'status': 'error',
         'message': 'Network error: $e',
-        'action': 'none'
+        'action': 'none',
       };
     }
   }
-  
-  /// Handle transfer money intent
-  static Future<Map<String, dynamic>> _handleTransferMoney(
-    String originalText, 
-    Map<String, dynamic> keywords
-  ) async {
-    try {
-      final amount = keywords['amount'];
-      final recipient = keywords['recipient'];
-      
-      if (amount == null) {
-        return {
-          'status': 'error',
-          'intent': 'transfer_money',
-          'action': 'missing_info',
-          'message': 'How much money do you want to send?',
-          'missing': 'amount'
-        };
-      }
-      
-      if (recipient == null) {
-        return {
-          'status': 'error',
-          'intent': 'transfer_money',
-          'action': 'missing_info',
-          'message': 'Who do you want to send money to?',
-          'missing': 'recipient'
-        };
-      }
-      
-      // Parse amount (remove "rs", "rupees", etc.)
-      final amountStr = amount.toString().replaceAll(RegExp(r'[^\d.]'), '');
-      final amountValue = double.tryParse(amountStr);
-      
-      if (amountValue == null || amountValue <= 0) {
-        return {
-          'status': 'error',
-          'intent': 'transfer_money',
-          'action': 'invalid_amount',
-          'message': 'Invalid amount: $amount',
-        };
-      }
-      
-      return {
-        'status': 'success',
-        'intent': 'transfer_money',
-        'action': 'initiate_transfer',
-        'message': 'Send ₹$amountValue to $recipient?',
-        'data': {
-          'amount': amountValue,
-          'recipient': recipient,
-          'original_text': originalText
-        }
-      };
-      
-    } catch (e) {
-      return {
-        'status': 'error',
-        'message': 'Error processing transfer: $e',
-        'action': 'error'
-      };
-    }
-  }
-  
-  /// Handle request money intent
-  static Future<Map<String, dynamic>> _handleRequestMoney(
-    String originalText,
-    Map<String, dynamic> keywords
-  ) async {
-    try {
-      final amount = keywords['amount'];
-      final recipient = keywords['recipient'];
-      
-      return {
-        'status': 'success',
-        'intent': 'request_money',
-        'action': 'initiate_request',
-        'message': 'Request ₹${amount ?? 'some'} from ${recipient ?? 'someone'}?',
-        'data': {
-          'amount': amount,
-          'recipient': recipient,
-          'original_text': originalText
-        }
-      };
-      
-    } catch (e) {
-      return {
-        'status': 'error',
-        'message': 'Error processing request: $e',
-        'action': 'error'
-      };
-    }
-  }
-  
+
   /// Get intent prediction from Flask server
   static Future<Map<String, dynamic>?> predictIntent(String text) async {
     try {
+      // Get user phone number
+      final userPhone = await getUserPhone() ?? '+919999999999';
+
       final response = await http.post(
         Uri.parse(CLASSIFY_INTENT_URL),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'text': text,
-        }),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'text': text, 'userPhone': userPhone}),
       );
 
       if (response.statusCode == 200) {
@@ -181,9 +141,7 @@ class IntentService {
 
   static Future<bool> checkServerHealth() async {
     try {
-      final response = await http.get(
-        Uri.parse('$INTENT_API_URL/health'),
-      );
+      final response = await http.get(Uri.parse('$INTENT_API_URL/health'));
       return response.statusCode == 200;
     } catch (e) {
       print('Health check failed: $e');

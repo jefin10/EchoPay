@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
 import 'home_page.dart';
 import 'voice_assistant_page.dart';
 import 'profile_page.dart';
@@ -22,51 +23,65 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1B3A),
+      backgroundColor: AppColors.backgroundDark,
       body: _pages[_currentIndex],
-      bottomNavigationBar: _buildCustomBottomNavigationBar(),
+      bottomNavigationBar: _buildModernBottomNavigationBar(),
     );
   }
 
-  Widget _buildCustomBottomNavigationBar() {
+  Widget _buildModernBottomNavigationBar() {
     return Container(
-      height: 80,
-      decoration: const BoxDecoration(
-        color: Color(0xFF2A2B5A),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(25),
-          topRight: Radius.circular(25),
+      height: 75,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.cardBackground,
+            AppColors.cardBackgroundLight,
+          ],
+        ),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-            offset: Offset(0, -5),
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildNavItem(
-            icon: Icons.home_rounded,
-            label: 'Home',
-            index: 0,
-            isSelected: _currentIndex == 0,
-          ),
-          _buildNavItem(
-            icon: Icons.mic_rounded,
-            label: 'Voice AI',
-            index: 1,
-            isSelected: _currentIndex == 1,
-          ),
-          _buildNavItem(
-            icon: Icons.person_rounded,
-            label: 'Profile',
-            index: 2,
-            isSelected: _currentIndex == 2,
-          ),
-        ],
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem(
+              icon: Icons.home_rounded,
+              label: 'Home',
+              index: 0,
+              isSelected: _currentIndex == 0,
+            ),
+            _buildNavItem(
+              icon: Icons.mic_rounded,
+              label: 'Voice',
+              index: 1,
+              isSelected: _currentIndex == 1,
+              isCenter: true,
+            ),
+            _buildNavItem(
+              icon: Icons.person_rounded,
+              label: 'Profile',
+              index: 2,
+              isSelected: _currentIndex == 2,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -76,6 +91,7 @@ class _DashboardPageState extends State<DashboardPage> {
     required String label,
     required int index,
     required bool isSelected,
+    bool isCenter = false,
   }) {
     return GestureDetector(
       onTap: () {
@@ -84,40 +100,58 @@ class _DashboardPageState extends State<DashboardPage> {
         });
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected 
-              ? const Color(0xFF6366F1).withOpacity(0.2)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isSelected 
-                    ? const Color(0xFF6366F1)
-                    : Colors.transparent,
-                shape: BoxShape.circle,
+            // Center item gets special treatment
+            if (isCenter && isSelected)
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryPurple.withOpacity(0.5),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              )
+            else
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: isSelected ? AppColors.primaryGradient : null,
+                  color: isSelected ? null : Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected ? Colors.white : AppColors.textGrayLight,
+                  size: 24,
+                ),
               ),
-              child: Icon(
-                icon,
-                color: isSelected ? Colors.white : Colors.grey[400],
-                size: 24,
-              ),
-            ),
             const SizedBox(height: 4),
-            Text(
-              label,
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 250),
               style: TextStyle(
-                color: isSelected ? const Color(0xFF6366F1) : Colors.grey[400],
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected ? AppColors.primaryPurple : AppColors.textGrayLight,
+                fontSize: isSelected ? 12 : 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
+              child: Text(label),
             ),
           ],
         ),

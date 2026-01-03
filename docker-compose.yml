@@ -14,7 +14,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U voiceupi_user -d voiceupi_db"]
+      test: [ "CMD-SHELL", "pg_isready -U voiceupi_user -d voiceupi_db" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,7 +30,7 @@ services:
     environment:
       - DEBUG=1
       - DJANGO_SETTINGS_MODULE=DJBackend.settings
-      - DATABASE_URL=postgresql://voiceupi_user:voiceupi_password@db:5432/voiceupi_db
+      - DATABASE_URL=postgresql://neondb_owner:npg_qs9fjyYRNlZ3@ep-fragrant-unit-a1k18h0x-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
       - POSTGRES_DB=voiceupi_db
       - POSTGRES_USER=voiceupi_user
       - POSTGRES_PASSWORD=voiceupi_password
@@ -44,7 +44,7 @@ services:
     networks:
       - voiceupi_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -67,7 +67,7 @@ services:
     networks:
       - voiceupi_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5002/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -87,7 +87,7 @@ services:
     networks:
       - voiceupi_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5005/"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5005/" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -95,6 +95,7 @@ services:
 
 volumes:
   postgres_data:
+
 
 networks:
   voiceupi_network:

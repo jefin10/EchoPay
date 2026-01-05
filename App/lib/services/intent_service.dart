@@ -6,7 +6,7 @@ import 'rasa_service.dart';
 
 class IntentService {
   /// Process voice command and execute action
-  /// Flow: Voice text -> Flask (intent classification) -> 
+  /// Flow: Voice text -> Flask (intent classification) ->
   ///       If confidence >= 70%: Extract keywords & route to Django for UPI actions
   ///       If confidence < 70%: Route to Rasa for casual conversation
   static Future<Map<String, dynamic>> processVoiceCommand(String text) async {
@@ -38,10 +38,10 @@ class IntentService {
       // CONFIDENCE CHECK: If confidence < 70% OR flagged to route to Rasa, send to Rasa chatbot
       if (routeToRasa || (confidence != null && confidence < 70.0)) {
         print('Routing to Rasa (confidence: $confidence%)...');
-        
+
         // Send to Rasa for casual conversation
         final rasaResponse = await RasaService.sendMessage(text);
-        
+
         return {
           'status': rasaResponse['status'],
           'intent': intent,
@@ -169,6 +169,7 @@ class IntentService {
   // Utility method to get user phone number
   static Future<String?> getUserPhone() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('userPhone');
+    // Use 'signedUpPhoneNumber' - same key as other pages (balance, profile, etc.)
+    return prefs.getString('signedUpPhoneNumber');
   }
 }

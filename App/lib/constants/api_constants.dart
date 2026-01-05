@@ -7,21 +7,20 @@
 // - iOS Simulator: use localhost or your IP
 // - Physical Device: use your computer's IP address
 
-
-const String DJANGO_BASE_URL = 'http://10.0.2.2:8000';
-const String INTENT_API_URL = 'http://10.0.2.2:5002';
-const String RASA_BASE_URL = 'http://10.0.2.2:5005';
+const String DJANGO_BASE_URL = 'http://172.16.197.199:8000';
+const String INTENT_API_URL = 'http://172.16.197.199:5002';
+const String RASA_BASE_URL = 'http://172.16.197.199:5005';
 
 // ==================== ENDPOINTS ====================
 
 // Auth
 const String SIGNUP_URL = '$DJANGO_BASE_URL/accounts/signup/';
-const String SEND_OTP_URL = '$DJANGO_BASE_URL/accounts/send_otp';
-const String VERIFY_OTP_URL = '$DJANGO_BASE_URL/accounts/verify_otp';
+const String SEND_OTP_URL = '$DJANGO_BASE_URL/accounts/send_otp/';
+const String VERIFY_OTP_URL = '$DJANGO_BASE_URL/accounts/verify_otp/';
 
 // Profile & Balance
 const String GET_PROFILE_URL = '$DJANGO_BASE_URL/accounts/getProfile/';
-const String GET_BALANCE_URL = '$DJANGO_BASE_URL/accounts/getBalance';
+const String GET_BALANCE_URL = '$DJANGO_BASE_URL/accounts/getBalance/';
 
 // Transactions
 const String GET_TRANSACTIONS_URL =

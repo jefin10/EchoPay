@@ -45,17 +45,68 @@ def login(upiName, phoneNumber):
         'status': 'success'
     })
 
+def normalize_phone_number(phone):
+    """Normalize phone number to ensure consistency.
+    Returns both the original and +91 prefixed version if not already prefixed."""
+    if not phone:
+        return phone, phone
+    
+    phone = str(phone).strip()
+    # If it starts with +91, also return version without +91
+    if phone.startswith('+91'):
+        without_prefix = phone[3:].lstrip('0')
+        return phone, without_prefix
+    # If it doesn't start with +91, also return version with +91
+    else:
+        phone_clean = phone.lstrip('0')
+        with_prefix = '+91' + phone_clean
+        return phone, with_prefix
+
 @api_view(['POST'])
 def SignUp(request):
     upiName = request.data.get('upiName')
     phoneNumber = request.data.get('phoneNumber')
     
+    # Normalize phone number to check both formats
+    phone_original, phone_alternate = normalize_phone_number(phoneNumber)
+    
+    # First check if phone number already exists (check both formats)
     try:
-        upiNameTaken= User.objects.get(upiName=upiName)
-        if(upiNameTaken.phoneNumber==phoneNumber):
-            return login(upiName,phoneNumber)
+        existing_user = User.objects.get(phoneNumber=phone_original)
+        # Phone number exists, log them into existing account
+        return JsonResponse({
+            'upiName': existing_user.upiName,
+            'phoneNumber': existing_user.phoneNumber,
+            'upiId': existing_user.upiMail,
+            'status': 'success'
+        })
     except User.DoesNotExist:
         pass
+    
+    # Try alternate phone format
+    try:
+        existing_user = User.objects.get(phoneNumber=phone_alternate)
+        # Phone number exists with alternate format, log them into existing account
+        return JsonResponse({
+            'upiName': existing_user.upiName,
+            'phoneNumber': existing_user.phoneNumber,
+            'upiId': existing_user.upiMail,
+            'status': 'success'
+        })
+    except User.DoesNotExist:
+        pass
+    
+    # Check if upiName is already taken by a different phone number
+    try:
+        upiNameTaken = User.objects.get(upiName=upiName)
+        # UPI name exists but with different phone number
+        return JsonResponse({
+            'error': 'UPI name already taken',
+            'status': 'error'
+        }, status=400)
+    except User.DoesNotExist:
+        pass
+    
     try:
         upiId= generateUpiId(upiName)
     except Exception as e:

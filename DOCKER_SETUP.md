@@ -80,6 +80,8 @@ docker-compose down
 
 # Restart a specific service
 docker-compose restart flask
+docker-compose restart django
+docker-compose restart rasa
 
 # View service logs
 docker-compose logs flask

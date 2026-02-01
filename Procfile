@@ -1,1 +1,0 @@
-web: gunicorn voice_upi_api:app

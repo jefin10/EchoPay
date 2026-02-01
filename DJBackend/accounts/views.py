@@ -1,41 +1,96 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from twilio.rest import Client
 from django.conf import settings
 import random
 from decimal import Decimal
 from rest_framework.decorators import api_view
-from .models import User
-from .models import UserAccount,Transaction, MoneyRequest
+from .models import User, OTP
+from .models import UserAccount, Transaction, MoneyRequest
 # Create your views here.
-
-otp_store = {}
 
 @api_view(['GET'])
 def send_otp(request):
+    """Generate and store OTP in database"""
     phone = request.GET.get("phone")
-    otp = str(random.randint(100000, 999999))
-    # Always store phone in +91 format
-    store_phone = phone
-    if not store_phone.startswith('+91'):
-        store_phone = '+91' + store_phone.lstrip('0')
-    otp_store[phone] = otp  
-    print(store_phone)
-    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-    message = client.messages.create(
-        body=f"Your OTP is {otp}",
-        from_=settings.TWILIO_PHONE_NUMBER,
-        to=store_phone
+    
+    if not phone:
+        return JsonResponse({"status": "error", "message": "Phone number required"}, status=400)
+    
+    # Generate 6-digit OTP
+    otp_code = str(random.randint(100000, 999999))
+    
+    # Delete old OTPs for this phone number
+    OTP.objects.filter(phoneNumber=phone).delete()
+    
+    # Create new OTP entry
+    otp_entry = OTP.objects.create(
+        phoneNumber=phone,
+        otp=otp_code
     )
-    return JsonResponse({"status": "OTP sent"})
+    
+    print(f"OTP generated for {phone}: {otp_code}")
+    
+    # TODO: Later integrate SMS service here
+    # For now, OTP is only stored in database (visible in admin panel)
+    
+    return JsonResponse({
+        "status": "success",
+        "message": "OTP generated successfully. Check admin panel for OTP.",
+        # Include OTP in development (remove in production)
+        "otp": otp_code if settings.DEBUG else None
+    })
 
+@api_view(['GET'])
 def verify_otp(request):
+    """Verify OTP from database and check if user exists"""
     phone = request.GET.get("phone")
     otp = request.GET.get("otp")
-    if otp_store.get(phone) == otp:
-        return JsonResponse({"status": "Verified"})
-    return JsonResponse({"status": "Failed"})
+    
+    if not phone or not otp:
+        return JsonResponse({"status": "error", "message": "Phone and OTP required"}, status=400)
+    
+    try:
+        # Get the most recent OTP for this phone
+        otp_entry = OTP.objects.filter(phoneNumber=phone).first()
+        
+        if not otp_entry:
+            return JsonResponse({"status": "error", "message": "No OTP found. Please request a new one."}, status=404)
+        
+        # Check if OTP is valid
+        if not otp_entry.is_valid():
+            return JsonResponse({"status": "error", "message": "OTP expired. Please request a new one."}, status=400)
+        
+        # Check if OTP matches
+        if otp_entry.otp != otp:
+            return JsonResponse({"status": "error", "message": "Invalid OTP"}, status=400)
+        
+        # Mark OTP as verified
+        otp_entry.is_verified = True
+        otp_entry.save()
+        
+        # Check if user exists
+        try:
+            user = User.objects.get(phoneNumber=phone)
+            is_new_user = False
+            user_data = {
+                'upiName': user.upiName,
+                'upiId': user.upiMail,
+            }
+        except User.DoesNotExist:
+            is_new_user = True
+            user_data = {}
+        
+        return JsonResponse({
+            "status": "success",
+            "message": "OTP verified successfully",
+            "isNewUser": is_new_user,
+            "phoneNumber": phone,
+            **user_data
+        })
+        
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 def login(upiName, phoneNumber):
 
@@ -64,42 +119,43 @@ def normalize_phone_number(phone):
 
 @api_view(['POST'])
 def SignUp(request):
+    """Create new user account after OTP verification (only name required now)"""
     upiName = request.data.get('upiName')
     phoneNumber = request.data.get('phoneNumber')
     
-    # Normalize phone number to check both formats
-    phone_original, phone_alternate = normalize_phone_number(phoneNumber)
-    
-    # First check if phone number already exists (check both formats)
-    try:
-        existing_user = User.objects.get(phoneNumber=phone_original)
-        # Phone number exists, log them into existing account
+    if not upiName or not phoneNumber:
         return JsonResponse({
-            'upiName': existing_user.upiName,
-            'phoneNumber': existing_user.phoneNumber,
-            'upiId': existing_user.upiMail,
-            'status': 'success'
-        })
+            'error': 'Name and phone number are required',
+            'status': 'error'
+        }, status=400)
+    
+    # Verify OTP was completed for this phone number
+    try:
+        otp_entry = OTP.objects.filter(phoneNumber=phoneNumber, is_verified=True).first()
+        if not otp_entry:
+            return JsonResponse({
+                'error': 'Please verify OTP first',
+                'status': 'error'
+            }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': 'OTP verification required',
+            'status': 'error'
+        }, status=400)
+    
+    # Check if user already exists
+    try:
+        existing_user = User.objects.get(phoneNumber=phoneNumber)
+        return JsonResponse({
+            'error': 'User already exists',
+            'status': 'error'
+        }, status=400)
     except User.DoesNotExist:
         pass
     
-    # Try alternate phone format
+    # Check if upiName is already taken
     try:
-        existing_user = User.objects.get(phoneNumber=phone_alternate)
-        # Phone number exists with alternate format, log them into existing account
-        return JsonResponse({
-            'upiName': existing_user.upiName,
-            'phoneNumber': existing_user.phoneNumber,
-            'upiId': existing_user.upiMail,
-            'status': 'success'
-        })
-    except User.DoesNotExist:
-        pass
-    
-    # Check if upiName is already taken by a different phone number
-    try:
-        upiNameTaken = User.objects.get(upiName=upiName)
-        # UPI name exists but with different phone number
+        User.objects.get(upiName=upiName)
         return JsonResponse({
             'error': 'UPI name already taken',
             'status': 'error'
@@ -108,7 +164,7 @@ def SignUp(request):
         pass
     
     try:
-        upiId= generateUpiId(upiName)
+        upiId = generateUpiId(upiName)
     except Exception as e:
         return JsonResponse({
             'error': str(e),
@@ -116,34 +172,30 @@ def SignUp(request):
         }, status=500)
         
     try:
+        # Create user
         user = User.objects.create(
             phoneNumber=phoneNumber,
             upiName=upiName,
             upiMail=upiId
         )
         user.save()
-    except Exception as e:
-        return JsonResponse({
-            'error': str(e),
-            'status': 'error'
-        }, status=500)
-    
-    try:
+        
+        # Create account with initial balance
         user_account = UserAccount.objects.create(user=user)
         user_account.save()
+        
+        return JsonResponse({
+            'upiName': upiName,
+            'phoneNumber': phoneNumber,
+            'upiId': upiId,
+            'status': 'success'
+        })
+        
     except Exception as e:
         return JsonResponse({
             'error': str(e),
             'status': 'error'
         }, status=500)
-    
-    
-    return JsonResponse({
-        'upiName': upiName,
-        'phoneNumber': phoneNumber,
-        'upiId': upiId,
-        'status': 'success'
-    })
 
 
 def generateUpiId(upiName):

@@ -169,7 +169,6 @@ class IntentService {
   // Utility method to get user phone number
   static Future<String?> getUserPhone() async {
     final prefs = await SharedPreferences.getInstance();
-    // Use 'signedUpPhoneNumber' - same key as other pages (balance, profile, etc.)
-    return prefs.getString('signedUpPhoneNumber');
+    return prefs.getString('phoneNumber');
   }
 }

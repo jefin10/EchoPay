@@ -35,7 +35,7 @@ class _BalancePageState extends State<BalancePage> {
 
   Future<void> _fetchBalance() async {
     final prefs = await SharedPreferences.getInstance();
-    final phoneNumber = prefs.getString('signedUpPhoneNumber');
+    final phoneNumber = prefs.getString('phoneNumber');
 
     if (phoneNumber == null) {
       setState(() {

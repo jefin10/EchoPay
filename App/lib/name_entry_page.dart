@@ -1,38 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'constants/api_constants.dart';
 import 'constants/app_colors.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+class NameEntryPage extends StatefulWidget {
+  final String phoneNumber;
+  const NameEntryPage({super.key, required this.phoneNumber});
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  State<NameEntryPage> createState() => _NameEntryPageState();
 }
 
-class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateMixin {
+class _NameEntryPageState extends State<NameEntryPage> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
   bool _isLoading = false;
   String? _error;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  Future<void> _checkAlreadySignedUp() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool('isSignedUp') ?? false) {
-      Navigator.pushReplacementNamed(context, '/biometric');
-    }
-  }
-
   @override
   void initState() {
     super.initState();
-    _checkAlreadySignedUp();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -47,39 +38,59 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   void dispose() {
     _animationController.dispose();
     _nameController.dispose();
-    _phoneController.dispose();
     super.dispose();
   }
 
-  Future<void> _submitSignup() async {
+  Future<void> _createAccount() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
         _error = null;
       });
-      final response = await http.post(
-        Uri.parse(SIGNUP_URL),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'upiName': _nameController.text,
-          'phoneNumber': _phoneController.text,
-        }),
-      );
-      setState(() {
-        _isLoading = false;
-      });
-      if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isSignedUp', true);
-        await prefs.setString('signedUpPhoneNumber', _phoneController.text);
-        Navigator.pushReplacementNamed(
-          context,
-          '/biometric',
+
+      try {
+        final response = await http.post(
+          Uri.parse(SIGNUP_URL),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'upiName': _nameController.text,
+            'phoneNumber': widget.phoneNumber,
+          }),
         );
-      } else {
-        final data = jsonDecode(response.body);
+
         setState(() {
-          _error = data['error'] ?? 'Signup failed';
+          _isLoading = false;
+        });
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          if (data['status'] == 'success') {
+            // Save user data
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('isLoggedIn', true);
+            await prefs.setString('phoneNumber', widget.phoneNumber);
+            await prefs.setString('userName', data['upiName']);
+            await prefs.setString('upiId', data['upiId']);
+
+            // Navigate to biometric setup
+            if (mounted) {
+              Navigator.pushReplacementNamed(context, '/biometric');
+            }
+          } else {
+            setState(() {
+              _error = data['error'] ?? 'Failed to create account';
+            });
+          }
+        } else {
+          final data = jsonDecode(response.body);
+          setState(() {
+            _error = data['error'] ?? 'Failed to create account';
+          });
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Network error. Please try again.';
         });
       }
     }
@@ -124,7 +135,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                           children: [
                             const SizedBox(height: 20),
                             const Text(
-                              'Create Account',
+                              'Complete Your Profile',
                               style: TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 24,
@@ -133,40 +144,14 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Enter your details to get started',
+                              'Tell us your name to create your account',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 14,
                               ),
                             ),
                             const SizedBox(height: 30),
-                            _buildInputField(
-                              controller: _nameController,
-                              label: 'Full Name',
-                              hint: 'Enter your full name',
-                              icon: Icons.person_outline,
-                              keyboardType: TextInputType.name,
-                              validator: (value) => 
-                                value == null || value.isEmpty ? 'Please enter your name' : null,
-                            ),
-                            const SizedBox(height: 20),
-                            _buildInputField(
-                              controller: _phoneController,
-                              label: 'Phone Number',
-                              hint: 'Enter your 10-digit mobile number',
-                              icon: Icons.phone_outlined,
-                              keyboardType: TextInputType.phone,
-                              maxLength: 10,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your phone number';
-                                }
-                                if (value.length != 10) {
-                                  return 'Phone number must be 10 digits';
-                                }
-                                return null;
-                              },
-                            ),
+                            _buildNameInput(),
                             const SizedBox(height: 10),
                             if (_error != null) ...[
                               Container(
@@ -193,7 +178,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                             const SizedBox(height: 20),
                             _buildContinueButton(),
                             const SizedBox(height: 30),
-                            _buildTermsText(),
+                            _buildInfoBox(),
                           ],
                         ),
                       ),
@@ -226,14 +211,14 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
             ],
           ),
           child: const Icon(
-            Icons.account_balance_wallet_rounded,
+            Icons.person_add_rounded,
             color: AppColors.primary,
             size: 36,
           ),
         ),
         const SizedBox(height: 16),
         const Text(
-          'EchoPay',
+          'Welcome!',
           style: TextStyle(
             color: Colors.white,
             fontSize: 28,
@@ -243,7 +228,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
         ),
         const SizedBox(height: 4),
         Text(
-          'Voice-powered payments',
+          widget.phoneNumber,
           style: TextStyle(
             color: Colors.white.withOpacity(0.8),
             fontSize: 14,
@@ -253,21 +238,13 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    required TextInputType keyboardType,
-    int? maxLength,
-    String? Function(String?)? validator,
-  }) {
+  Widget _buildNameInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
+        const Text(
+          'Full Name',
+          style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -275,20 +252,16 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLength: maxLength,
+          controller: _nameController,
+          keyboardType: TextInputType.name,
+          textCapitalization: TextCapitalization.words,
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
-          inputFormatters: keyboardType == TextInputType.phone
-              ? [FilteringTextInputFormatter.digitsOnly]
-              : null,
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: 'Enter your full name',
             hintStyle: TextStyle(color: AppColors.textGray),
-            prefixIcon: Icon(icon, color: AppColors.primary),
+            prefixIcon: Icon(Icons.person_outline, color: AppColors.primary),
             filled: true,
             fillColor: AppColors.surfaceLight,
-            counterText: '',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: AppColors.divider),
@@ -311,7 +284,15 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
-          validator: validator,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your name';
+            }
+            if (value.length < 2) {
+              return 'Name must be at least 2 characters';
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -321,7 +302,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     return SizedBox(
       height: 54,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _submitSignup,
+        onPressed: _isLoading ? null : _createAccount,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
@@ -341,7 +322,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                 ),
               )
             : const Text(
-                'Continue',
+                'Create Account',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -351,24 +332,35 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildTermsText() {
-    return Text.rich(
-      TextSpan(
-        text: 'By continuing, you agree to our ',
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-        children: const [
-          TextSpan(
-            text: 'Terms of Service',
-            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+  Widget _buildInfoBox() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline,
+            color: AppColors.primary,
+            size: 20,
           ),
-          TextSpan(text: ' and '),
-          TextSpan(
-            text: 'Privacy Policy',
-            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Your account will start with ₹5,000 balance',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 13,
+              ),
+            ),
           ),
         ],
       ),
-      textAlign: TextAlign.center,
     );
   }
 }

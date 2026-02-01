@@ -1,4 +1,4 @@
-/// API Constants for VoiceUPI Application
+/// API Constants for EchoPay Application
 /// Simple React Native style - just change the URLs here!
 
 // ==================== BASE URLs ====================
@@ -7,9 +7,9 @@
 // - iOS Simulator: use localhost or your IP
 // - Physical Device: use your computer's IP address
 
-const String DJANGO_BASE_URL = 'http://10.0.2.2:8000';
-const String INTENT_API_URL = 'http://10.0.2.2:5002';
-const String RASA_BASE_URL = 'http://10.0.2.2:5005';
+const String DJANGO_BASE_URL = 'http://172.16.197.199:8000';
+const String INTENT_API_URL = 'http://172.16.197.199:5002';
+const String RASA_BASE_URL = 'http://172.16.197.199:5005';
 
 // ==================== ENDPOINTS ====================
 

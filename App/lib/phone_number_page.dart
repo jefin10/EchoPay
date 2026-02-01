@@ -1,38 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'constants/api_constants.dart';
 import 'constants/app_colors.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+class PhoneNumberPage extends StatefulWidget {
+  const PhoneNumberPage({super.key});
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  State<PhoneNumberPage> createState() => _PhoneNumberPageState();
 }
 
-class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateMixin {
+class _PhoneNumberPageState extends State<PhoneNumberPage> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   bool _isLoading = false;
   String? _error;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  Future<void> _checkAlreadySignedUp() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool('isSignedUp') ?? false) {
-      Navigator.pushReplacementNamed(context, '/biometric');
-    }
-  }
-
   @override
   void initState() {
     super.initState();
-    _checkAlreadySignedUp();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -46,40 +36,51 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   @override
   void dispose() {
     _animationController.dispose();
-    _nameController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
 
-  Future<void> _submitSignup() async {
+  Future<void> _sendOtp() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
         _error = null;
       });
-      final response = await http.post(
-        Uri.parse(SIGNUP_URL),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'upiName': _nameController.text,
-          'phoneNumber': _phoneController.text,
-        }),
-      );
-      setState(() {
-        _isLoading = false;
-      });
-      if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isSignedUp', true);
-        await prefs.setString('signedUpPhoneNumber', _phoneController.text);
-        Navigator.pushReplacementNamed(
-          context,
-          '/biometric',
+
+      try {
+        final response = await http.get(
+          Uri.parse('$SEND_OTP_URL?phone=${_phoneController.text}'),
         );
-      } else {
-        final data = jsonDecode(response.body);
+
         setState(() {
-          _error = data['error'] ?? 'Signup failed';
+          _isLoading = false;
+        });
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          if (data['status'] == 'success') {
+            // Navigate to OTP page
+            if (mounted) {
+              Navigator.pushNamed(
+                context,
+                '/verify-otp',
+                arguments: {'phoneNumber': _phoneController.text},
+              );
+            }
+          } else {
+            setState(() {
+              _error = data['message'] ?? 'Failed to send OTP';
+            });
+          }
+        } else {
+          setState(() {
+            _error = 'Failed to send OTP. Please try again.';
+          });
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Network error. Please check your connection.';
         });
       }
     }
@@ -124,7 +125,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                           children: [
                             const SizedBox(height: 20),
                             const Text(
-                              'Create Account',
+                              'Welcome to EchoPay',
                               style: TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 24,
@@ -133,40 +134,14 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Enter your details to get started',
+                              'Enter your mobile number to continue',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 14,
                               ),
                             ),
                             const SizedBox(height: 30),
-                            _buildInputField(
-                              controller: _nameController,
-                              label: 'Full Name',
-                              hint: 'Enter your full name',
-                              icon: Icons.person_outline,
-                              keyboardType: TextInputType.name,
-                              validator: (value) => 
-                                value == null || value.isEmpty ? 'Please enter your name' : null,
-                            ),
-                            const SizedBox(height: 20),
-                            _buildInputField(
-                              controller: _phoneController,
-                              label: 'Phone Number',
-                              hint: 'Enter your 10-digit mobile number',
-                              icon: Icons.phone_outlined,
-                              keyboardType: TextInputType.phone,
-                              maxLength: 10,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your phone number';
-                                }
-                                if (value.length != 10) {
-                                  return 'Phone number must be 10 digits';
-                                }
-                                return null;
-                              },
-                            ),
+                            _buildPhoneInput(),
                             const SizedBox(height: 10),
                             if (_error != null) ...[
                               Container(
@@ -253,21 +228,13 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    required TextInputType keyboardType,
-    int? maxLength,
-    String? Function(String?)? validator,
-  }) {
+  Widget _buildPhoneInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
+        const Text(
+          'Mobile Number',
+          style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -275,17 +242,15 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLength: maxLength,
+          controller: _phoneController,
+          keyboardType: TextInputType.phone,
+          maxLength: 10,
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
-          inputFormatters: keyboardType == TextInputType.phone
-              ? [FilteringTextInputFormatter.digitsOnly]
-              : null,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: 'Enter your 10-digit mobile number',
             hintStyle: TextStyle(color: AppColors.textGray),
-            prefixIcon: Icon(icon, color: AppColors.primary),
+            prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primary),
             filled: true,
             fillColor: AppColors.surfaceLight,
             counterText: '',
@@ -311,7 +276,15 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
-          validator: validator,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your mobile number';
+            }
+            if (value.length != 10) {
+              return 'Mobile number must be 10 digits';
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -321,7 +294,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     return SizedBox(
       height: 54,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _submitSignup,
+        onPressed: _isLoading ? null : _sendOtp,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
@@ -341,7 +314,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                 ),
               )
             : const Text(
-                'Continue',
+                'Send OTP',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

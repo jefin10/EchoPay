@@ -107,7 +107,7 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final senderPhone = prefs.getString('signedUpPhoneNumber') ?? '';
+      final senderPhone = prefs.getString('phoneNumber') ?? '';
       final receiverUpi = _upiController.text.trim();
       final remark = _remarkController.text.trim();
 

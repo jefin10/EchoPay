@@ -1,39 +1,40 @@
-version: "3.9"
+# EchoPay Project - Completely separate from VoiceUPI
+name: echopay
 
 services:
   # PostgreSQL Database
   db:
     image: postgres:15
-    container_name: voiceupi_db
+    container_name: echopay_db
     environment:
-      POSTGRES_DB: voiceupi_db
-      POSTGRES_USER: voiceupi_user
-      POSTGRES_PASSWORD: voiceupi_password
+      POSTGRES_DB: echopay_db
+      POSTGRES_USER: echopay_user
+      POSTGRES_PASSWORD: echopay_password
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - echopay_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U voiceupi_user -d voiceupi_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U echopay_user -d echopay_db" ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - voiceupi_network
+      - echopay_network
 
   # Django Backend (UPI Transaction Service)
   django:
     build:
       context: ./DJBackend
       dockerfile: Dockerfile
-    container_name: voiceupi_django
+    container_name: echopay_django
     environment:
       - DEBUG=1
       - DJANGO_SETTINGS_MODULE=DJBackend.settings
-      - DATABASE_URL=postgresql://neondb_owner:npg_qs9fjyYRNlZ3@ep-fragrant-unit-a1k18h0x-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-      - POSTGRES_DB=voiceupi_db
-      - POSTGRES_USER=voiceupi_user
-      - POSTGRES_PASSWORD=voiceupi_password
+      - DATABASE_URL=postgresql://echopay_user:echopay_password@db:5432/echopay_db
+      - POSTGRES_DB=echopay_db
+      - POSTGRES_USER=echopay_user
+      - POSTGRES_PASSWORD=echopay_password
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
     ports:
@@ -42,7 +43,7 @@ services:
       db:
         condition: service_healthy
     networks:
-      - voiceupi_network
+      - echopay_network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
       interval: 30s
@@ -55,7 +56,7 @@ services:
     build:
       context: ./Backend
       dockerfile: Dockerfile
-    container_name: voiceupi_flask
+    container_name: echopay_flask
     environment:
       - FLASK_ENV=development
       - FLASK_APP=flask_server.py
@@ -65,7 +66,7 @@ services:
     depends_on:
       - django
     networks:
-      - voiceupi_network
+      - echopay_network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5002/health" ]
       interval: 30s
@@ -78,14 +79,14 @@ services:
     build:
       context: ./Rasa
       dockerfile: Dockerfile
-    container_name: voiceupi_rasa
+    container_name: echopay_rasa
     ports:
       - "5005:5005"
     volumes:
       - ./Rasa/models:/app/models
     command: run --enable-api --cors "*" --debug
     networks:
-      - voiceupi_network
+      - echopay_network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5005/" ]
       interval: 30s
@@ -94,9 +95,10 @@ services:
       start_period: 60s
 
 volumes:
-  postgres_data:
-
+  echopay_postgres_data:
+    name: echopay_postgres_data
 
 networks:
-  voiceupi_network:
+  echopay_network:
+    name: echopay_network
     driver: bridge

@@ -641,7 +641,7 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                           return;
                         }
                         final prefs = await SharedPreferences.getInstance();
-                        final senderPhone = prefs.getString('signedUpPhoneNumber') ?? '';
+                        final senderPhone = prefs.getString('phoneNumber') ?? '';
                         final sendUrl = Uri.parse(SEND_MONEY_PHONE_URL);
                         final sendResponse = await http.post(
                           sendUrl,

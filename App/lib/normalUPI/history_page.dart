@@ -32,7 +32,7 @@ class _HistoryPageState extends State<HistoryPage> {
     });
     try {
       final prefs = await SharedPreferences.getInstance();
-      final phoneNumber = prefs.getString('signedUpPhoneNumber');
+      final phoneNumber = prefs.getString('phoneNumber');
       if (phoneNumber == null) {
         setState(() {
           _loading = false;

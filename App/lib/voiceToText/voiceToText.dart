@@ -55,7 +55,7 @@ class _SpeechScreenState extends State<SpeechScreen>
 
   Future<void> _loadUserPhone() async {
     final prefs = await SharedPreferences.getInstance();
-    _userPhone = prefs.getString('signedUpPhoneNumber');
+    _userPhone = prefs.getString('phoneNumber');
   }
 
   void _checkServerConnection() async {

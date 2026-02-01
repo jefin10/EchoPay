@@ -8,9 +8,8 @@ import 'constants/api_constants.dart';
 import 'constants/app_colors.dart';
 
 class VerifyOtpPage extends StatefulWidget {
-  final String fullName;
   final String phoneNumber;
-  const VerifyOtpPage({super.key, required this.fullName, required this.phoneNumber});
+  const VerifyOtpPage({super.key, required this.phoneNumber});
 
   @override
   State<VerifyOtpPage> createState() => _VerifyOtpPageState();
@@ -109,33 +108,61 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
       _isVerifying = true;
       _error = null;
     });
-    final response = await http.get(
-      Uri.parse('$VERIFY_OTP_URL?phone=${widget.phoneNumber}&otp=$otp'),
-    );
-    setState(() {
-      _isVerifying = false;
-    });
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data['status'] == 'Verified') {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('userPhone', widget.phoneNumber);
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/biometric');
+    
+    try {
+      final response = await http.get(
+        Uri.parse('$VERIFY_OTP_URL?phone=${widget.phoneNumber}&otp=$otp'),
+      );
+      
+      setState(() {
+        _isVerifying = false;
+      });
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == 'success') {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('phoneNumber', widget.phoneNumber);
+          
+          // Check if new user or existing user
+          if (data['isNewUser'] == true) {
+            // New user - go to name entry page
+            if (mounted) {
+              Navigator.pushReplacementNamed(
+                context,
+                '/name-entry',
+                arguments: {'phoneNumber': widget.phoneNumber},
+              );
+            }
+          } else {
+            // Existing user - save details and go to home
+            await prefs.setBool('isLoggedIn', true);
+            await prefs.setString('userName', data['upiName']);
+            await prefs.setString('upiId', data['upiId']);
+            
+            if (mounted) {
+              Navigator.pushReplacementNamed(context, '/biometric');
+            }
+          }
+        } else {
+          setState(() {
+            _error = data['message'] ?? 'Invalid OTP';
+          });
+          for (var controller in _otpControllers) {
+            controller.clear();
+          }
+          _focusNodes[0].requestFocus();
         }
       } else {
+        final data = jsonDecode(response.body);
         setState(() {
-          _error = 'Invalid OTP';
+          _error = data['message'] ?? 'Failed to verify OTP';
         });
-        for (var controller in _otpControllers) {
-          controller.clear();
-        }
-        _focusNodes[0].requestFocus();
       }
-    } else {
+    } catch (e) {
       setState(() {
-        _error = 'Failed to verify OTP';
+        _isVerifying = false;
+        _error = 'Network error. Please try again.';
       });
     }
   }

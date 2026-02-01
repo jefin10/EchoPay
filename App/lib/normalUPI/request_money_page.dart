@@ -42,7 +42,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage>
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final phoneNumber = prefs.getString('signedUpPhoneNumber');
+      final phoneNumber = prefs.getString('phoneNumber');
       
       if (phoneNumber != null) {
         final url = Uri.parse('$GET_REQUESTS_URL?phoneNumber=$phoneNumber');
@@ -78,7 +78,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage>
   Future<void> _updateRequestStatus(int requestId, String status) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final phoneNumber = prefs.getString('signedUpPhoneNumber');
+      final phoneNumber = prefs.getString('phoneNumber');
       
       final url = Uri.parse(UPDATE_REQUEST_URL);
       final response = await http.post(
@@ -779,7 +779,7 @@ class _RequestMoneyDialogState extends State<RequestMoneyDialog> {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final requesterPhone = prefs.getString('signedUpPhoneNumber');
+      final requesterPhone = prefs.getString('phoneNumber');
       
       final url = Uri.parse(CREATE_REQUEST_URL);
       final response = await http.post(

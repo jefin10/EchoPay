@@ -29,7 +29,7 @@ class _MyQRPageState extends State<MyQRPage> {
   Future<void> _loadUserData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final phoneNumber = prefs.getString('signedUpPhoneNumber');
+      final phoneNumber = prefs.getString('phoneNumber');
       
       if (phoneNumber != null) {
         setState(() {

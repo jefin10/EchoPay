@@ -36,10 +36,9 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false);
-    await prefs.setBool('isSignedUp', false);
+    await prefs.clear();
     if (mounted) {
-      Navigator.pushReplacementNamed(context, '/signup');
+      Navigator.pushReplacementNamed(context, '/phone');
     }
   }
 

@@ -25,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    final phoneNumber = prefs.getString('signedUpPhoneNumber');
+    final phoneNumber = prefs.getString('phoneNumber');
     if (phoneNumber != null) {
       try {
         final response = await Uri.parse('$GET_PROFILE_URL?phoneNumber=$phoneNumber');
@@ -70,10 +70,9 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () async {
               Navigator.pop(context);
               final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('isLoggedIn', false);
-              await prefs.setBool('isSignedUp', false);
+              await prefs.clear();
               if (mounted) {
-                Navigator.pushReplacementNamed(context, '/signup');
+                Navigator.pushReplacementNamed(context, '/phone');
               }
             },
             child: const Text('Logout', style: TextStyle(color: AppColors.error)),

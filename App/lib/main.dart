@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'signup_page.dart';
+import 'phone_number_page.dart';
 import 'verify_otp_page.dart';
+import 'name_entry_page.dart';
 import 'normalUPI/landing.dart';
 import 'constants/app_colors.dart';
 
@@ -46,7 +47,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'VoiceUPI',
+      title: 'EchoPay',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.light(
@@ -65,13 +66,18 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
-      initialRoute: _isLoggedIn ? '/biometric' : '/signup',
+      initialRoute: _isLoggedIn ? '/biometric' : '/phone',
       routes: {
-        '/signup': (context) => const SignupPage(),
-        '/verify': (context) {
+        '/phone': (context) => const PhoneNumberPage(),
+        '/verify-otp': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
           return VerifyOtpPage(
-            fullName: args?['fullName'] ?? '',
+            phoneNumber: args?['phoneNumber'] ?? '',
+          );
+        },
+        '/name-entry': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>?;
+          return NameEntryPage(
             phoneNumber: args?['phoneNumber'] ?? '',
           );
         },
@@ -143,7 +149,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
       }
 
       authenticated = await auth.authenticate(
-        localizedReason: 'Authenticate to access VoiceUPI',
+        localizedReason: 'Authenticate to access EchoPay',
         options: const AuthenticationOptions(
           biometricOnly: false,
           stickyAuth: true,
@@ -186,7 +192,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const MyHomePage(title: 'VoiceUPI'),
+          builder: (context) => const MyHomePage(title: 'EchoPay'),
         ),
       );
     }
@@ -240,7 +246,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                   
                   // App Title
                   const Text(
-                    'VoiceUPI',
+                    'EchoPay',
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w700,

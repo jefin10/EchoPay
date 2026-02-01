@@ -1,6 +1,6 @@
-# VoiceUPI Docker Setup
+# EchoPay Docker Setup
 
-Complete Docker configuration for the VoiceUPI multi-service application.
+Complete Docker configuration for the EchoPay multi-service application.
 
 ## 🏗️ Architecture
 
@@ -17,7 +17,7 @@ The application consists of 4 Docker services:
 
 ```bash
 # Navigate to project directory
-cd /home/jen/Desktop/Projects/VoiceUPI
+cd /home/jen/Desktop/Projects/EchoPay
 
 # Copy environment template (optional)
 cp .env.example .env
@@ -96,7 +96,7 @@ docker-compose logs -f flask
 
 ```bash
 # Access PostgreSQL shell
-docker-compose exec db psql -U voiceupi_user -d voiceupi_db
+docker-compose exec db psql -U echopay_user -d echopay_db
 
 # Run Django migrations manually
 docker-compose exec django python manage.py migrate
@@ -152,7 +152,7 @@ docker-compose logs <service-name>
 
 ```bash
 # Ensure database is ready
-docker-compose exec db pg_isready -U voiceupi_user -d voiceupi_db
+docker-compose exec db pg_isready -U echopay_user -d echopay_db
 
 # Check Django can connect
 docker-compose exec django python manage.py dbshell
@@ -201,9 +201,9 @@ const String RASA_BASE_URL = "http://localhost:5005";
 Key environment variables (set in `.env` or `docker-compose.yml`):
 
 ### Database
-- `POSTGRES_DB` - Database name (default: voiceupi_db)
-- `POSTGRES_USER` - Database user (default: voiceupi_user)
-- `POSTGRES_PASSWORD` - Database password (default: voiceupi_password)
+- `POSTGRES_DB` - Database name (default: echopay_db)
+- `POSTGRES_USER` - Database user (default: echopay_user)
+- `POSTGRES_PASSWORD` - Database password (default: echopay_password)
 
 ### Django
 - `DEBUG` - Debug mode (1 for dev, 0 for production)
@@ -230,7 +230,7 @@ For production deployment:
 ## 📂 File Structure
 
 ```
-VoiceUPI/
+EchoPay/
 ├── docker-compose.yml          # Main Docker Compose configuration
 ├── docker-compose.dev.yml      # Development overrides
 ├── .env.example                # Environment variable template

@@ -139,7 +139,7 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
     });
     try {
       final prefs = await SharedPreferences.getInstance();
-      final senderPhone = prefs.getString('signedUpPhoneNumber') ?? '';
+      final senderPhone = prefs.getString('phoneNumber') ?? '';
       final receiverPhone = _controller.text.trim();
       final remark = _remarkController.text.trim();
       final url = Uri.parse(SEND_MONEY_PHONE_URL);

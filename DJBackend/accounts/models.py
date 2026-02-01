@@ -1,6 +1,25 @@
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
+class OTP(models.Model):
+    phoneNumber = models.CharField(max_length=15)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def is_valid(self):
+        """Check if OTP is still valid (within 10 minutes)"""
+        expiry_time = self.created_at + timedelta(minutes=10)
+        return timezone.now() < expiry_time and not self.is_verified
+    
+    def __str__(self):
+        return f"{self.phoneNumber} - {self.otp} - {'Verified' if self.is_verified else 'Pending'}"
+
 class User(models.Model):
     phoneNumber= models.CharField(max_length=15, unique=True)
     upiName = models.CharField(max_length=100)

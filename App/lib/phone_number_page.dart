@@ -87,8 +87,12 @@ class _PhoneNumberPageState extends State<PhoneNumberPage>
           '$_selectedCountryCode${_phoneController.text.trim()}';
 
       try {
+        final uri = Uri.parse(SEND_OTP_URL).replace(
+          queryParameters: {'phone': fullPhoneNumber},
+        );
+
         final response = await http.get(
-          Uri.parse('$SEND_OTP_URL?phone=$fullPhoneNumber'),
+          uri,
         );
 
         setState(() => _isLoading = false);

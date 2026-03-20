@@ -12,7 +12,7 @@ from .models import UserAccount, Transaction, MoneyRequest
 @api_view(['GET'])
 def send_otp(request):
     """Generate and store OTP in database"""
-    phone = request.GET.get("phone")
+    phone = canonicalize_phone_number(request.GET.get("phone"))
     
     if not phone:
         return JsonResponse({"status": "error", "message": "Phone number required"}, status=400)
@@ -24,7 +24,7 @@ def send_otp(request):
     OTP.objects.filter(phoneNumber=phone).delete()
     
     # Create new OTP entry
-    otp_entry = OTP.objects.create(
+    OTP.objects.create(
         phoneNumber=phone,
         otp=otp_code
     )
@@ -51,8 +51,10 @@ def verify_otp(request):
         return JsonResponse({"status": "error", "message": "Phone and OTP required"}, status=400)
     
     try:
+        phone_candidates = get_phone_candidates(phone)
+
         # Get the most recent OTP for this phone
-        otp_entry = OTP.objects.filter(phoneNumber=phone).first()
+        otp_entry = OTP.objects.filter(phoneNumber__in=phone_candidates).first()
         
         if not otp_entry:
             return JsonResponse({"status": "error", "message": "No OTP found. Please request a new one."}, status=404)
@@ -71,7 +73,9 @@ def verify_otp(request):
         
         # Check if user exists
         try:
-            user = User.objects.get(phoneNumber=phone)
+            user = User.objects.filter(phoneNumber__in=phone_candidates).first()
+            if not user:
+                raise User.DoesNotExist
             is_new_user = False
             user_data = {
                 'upiName': user.upiName,
@@ -85,7 +89,7 @@ def verify_otp(request):
             "status": "success",
             "message": "OTP verified successfully",
             "isNewUser": is_new_user,
-            "phoneNumber": phone,
+            "phoneNumber": canonicalize_phone_number(phone),
             **user_data
         })
         
@@ -100,28 +104,65 @@ def login(upiName, phoneNumber):
         'status': 'success'
     })
 
-def normalize_phone_number(phone):
-    """Normalize phone number to ensure consistency.
-    Returns both the original and +91 prefixed version if not already prefixed."""
+def get_phone_candidates(phone):
+    """Return lookup candidates for phone numbers across +91/91/10-digit formats."""
     if not phone:
-        return phone, phone
-    
-    phone = str(phone).strip()
-    # If it starts with +91, also return version without +91
-    if phone.startswith('+91'):
-        without_prefix = phone[3:].lstrip('0')
-        return phone, without_prefix
-    # If it doesn't start with +91, also return version with +91
+        return []
+
+    raw = str(phone).strip().replace(' ', '').replace('-', '')
+    if raw.startswith('+'):
+        digits = ''.join(ch for ch in raw[1:] if ch.isdigit())
     else:
-        phone_clean = phone.lstrip('0')
-        with_prefix = '+91' + phone_clean
-        return phone, with_prefix
+        digits = ''.join(ch for ch in raw if ch.isdigit())
+
+    if not digits:
+        return [raw]
+
+    if len(digits) >= 10:
+        local = digits[-10:]
+    else:
+        local = digits
+
+    candidates = {
+        raw,
+        digits,
+        local,
+        f'+{digits}',
+        f'+91{local}',
+        f'91{local}',
+    }
+    return list(candidates)
+
+
+def canonicalize_phone_number(phone):
+    """Canonical phone format used for writes: +91XXXXXXXXXX"""
+    if not phone:
+        return ''
+
+    raw = str(phone).strip().replace(' ', '').replace('-', '')
+    if raw.startswith('+'):
+        digits_only = ''.join(ch for ch in raw[1:] if ch.isdigit())
+    else:
+        digits_only = ''.join(ch for ch in raw if ch.isdigit())
+
+    if not digits_only:
+        return ''
+
+    local = digits_only[-10:] if len(digits_only) >= 10 else digits_only
+    return f'+91{local}' if local else ''
+
+
+def get_user_by_phone(phone):
+    candidates = get_phone_candidates(phone)
+    if not candidates:
+        return None
+    return User.objects.filter(phoneNumber__in=candidates).first()
 
 @api_view(['POST'])
 def SignUp(request):
     """Create new user account after OTP verification (only name required now)"""
     upiName = request.data.get('upiName')
-    phoneNumber = request.data.get('phoneNumber')
+    phoneNumber = canonicalize_phone_number(request.data.get('phoneNumber'))
     
     if not upiName or not phoneNumber:
         return JsonResponse({
@@ -134,12 +175,13 @@ def SignUp(request):
     
     # Check if user already exists
     try:
-        existing_user = User.objects.get(phoneNumber=phoneNumber)
-        return JsonResponse({
-            'error': 'User already exists',
-            'status': 'error'
-        }, status=400)
-    except User.DoesNotExist:
+        existing_user = User.objects.filter(phoneNumber__in=get_phone_candidates(phoneNumber)).first()
+        if existing_user:
+            return JsonResponse({
+                'error': 'User already exists',
+                'status': 'error'
+            }, status=400)
+    except Exception:
         pass
     
     # Check if upiName is already taken
@@ -192,10 +234,13 @@ def generateUpiId(upiName):
     return upi_id
 
 
+@api_view(['GET'])
 def searchNumber(request):
     phoneNumber = request.GET.get('phoneNumber')
     try:
-        user = User.objects.get(phoneNumber=phoneNumber)
+        user = get_user_by_phone(phoneNumber)
+        if not user:
+            raise User.DoesNotExist
         return JsonResponse({
             'upiName': user.upiName,
             'upiId': user.upiMail,
@@ -207,6 +252,7 @@ def searchNumber(request):
             'status': 'error'
         }, status=404)
         
+@api_view(['GET'])
 def searchByUpiId(request):
     upiId = request.GET.get('upiId')
     try:
@@ -222,10 +268,13 @@ def searchByUpiId(request):
             'status': 'error'
         }, status=404)
         
+@api_view(['GET'])
 def getProfile(request):
     phoneNumber = request.GET.get('phoneNumber')
     try:
-        user = User.objects.get(phoneNumber=phoneNumber)
+        user = get_user_by_phone(phoneNumber)
+        if not user:
+            raise User.DoesNotExist
         return JsonResponse({
             'upiName': user.upiName,
             'upiId': user.upiMail,
@@ -238,10 +287,13 @@ def getProfile(request):
         }, status=404)
 
 
+@api_view(['GET'])
 def getBalance(request):
     phoneNumber = request.GET.get('phoneNumber')
     try:
-        user = User.objects.get(phoneNumber=phoneNumber)
+        user = get_user_by_phone(phoneNumber)
+        if not user:
+            raise User.DoesNotExist
         user_account = UserAccount.objects.get(user=user)
         return JsonResponse({
             'balance': str(user_account.balance),
@@ -329,7 +381,9 @@ def sendMoneyPhone(request):
     amount = Decimal(str(request.data.get('amount')))
     
     try:
-        sender = User.objects.get(phoneNumber=sender_phone)
+        sender = get_user_by_phone(sender_phone)
+        if not sender:
+            raise User.DoesNotExist
         sender_account = UserAccount.objects.get(user=sender)
     except User.DoesNotExist:
         return JsonResponse({
@@ -343,7 +397,9 @@ def sendMoneyPhone(request):
         }, status=404)
     
     try:
-        receiver = User.objects.get(phoneNumber=receiver_phone)
+        receiver = get_user_by_phone(receiver_phone)
+        if not receiver:
+            raise User.DoesNotExist
         receiver_account = UserAccount.objects.get(user=receiver)
     except User.DoesNotExist:
         return JsonResponse({
@@ -387,9 +443,11 @@ def sendMoneyPhone(request):
 
 @api_view(['POST'])
 def getTransactions(request):
-    phoneNumber = request.data.get('phoneNumber')
+    phoneNumber = request.data.get('phoneNumber') or request.GET.get('phoneNumber')
     try:
-        user = User.objects.get(phoneNumber=phoneNumber)
+        user = get_user_by_phone(phoneNumber)
+        if not user:
+            raise User.DoesNotExist
         user_account = UserAccount.objects.get(user=user)
         sent_transactions = Transaction.objects.filter(sender=user_account).values('receiver__user__upiName', 'amount', 'timestamp', 'status')
         received_transactions = Transaction.objects.filter(receiver=user_account).values('sender__user__upiName', 'amount', 'timestamp', 'status')
@@ -419,7 +477,9 @@ def checkHasAccount(request):
     phoneNumber = request.GET.get('phoneNumber')
     print('here')
     try:
-        user = User.objects.get(phoneNumber=phoneNumber)
+        user = get_user_by_phone(phoneNumber)
+        if not user:
+            raise User.DoesNotExist
         user_account = UserAccount.objects.get(user=user)
         return JsonResponse({
             'hasAccount': True,
@@ -445,7 +505,9 @@ def createMoneyRequest(request):
     message = request.data.get('message', '')
     
     try:
-        requester = User.objects.get(phoneNumber=requester_phone)
+        requester = get_user_by_phone(requester_phone)
+        if not requester:
+            raise User.DoesNotExist
         requester_account = UserAccount.objects.get(user=requester)
     except User.DoesNotExist:
         return JsonResponse({
@@ -459,7 +521,9 @@ def createMoneyRequest(request):
         }, status=404)
     
     try:
-        requestee = User.objects.get(phoneNumber=requestee_phone)
+        requestee = get_user_by_phone(requestee_phone)
+        if not requestee:
+            raise User.DoesNotExist
         requestee_account = UserAccount.objects.get(user=requestee)
     except User.DoesNotExist:
         return JsonResponse({
@@ -501,7 +565,9 @@ def createMoneyRequestByUpi(request):
     message = request.data.get('message', '')
     
     try:
-        requester = User.objects.get(phoneNumber=requester_phone)
+        requester = get_user_by_phone(requester_phone)
+        if not requester:
+            raise User.DoesNotExist
         requester_account = UserAccount.objects.get(user=requester)
     except User.DoesNotExist:
         return JsonResponse({
@@ -554,7 +620,9 @@ def getMoneyRequests(request):
     phone_number = request.GET.get('phoneNumber')
     
     try:
-        user = User.objects.get(phoneNumber=phone_number)
+        user = get_user_by_phone(phone_number)
+        if not user:
+            raise User.DoesNotExist
         user_account = UserAccount.objects.get(user=user)
         
         # Get sent requests
@@ -594,7 +662,9 @@ def updateRequestStatus(request):
     
     try:
         money_request = MoneyRequest.objects.get(id=request_id)
-        user = User.objects.get(phoneNumber=phone_number)
+        user = get_user_by_phone(phone_number)
+        if not user:
+            raise User.DoesNotExist
         user_account = UserAccount.objects.get(user=user)
         
         # Check if user has permission to update this request

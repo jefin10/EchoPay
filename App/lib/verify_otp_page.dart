@@ -101,8 +101,12 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
       _error = null;
     });
     try {
+      final uri = Uri.parse(SEND_OTP_URL).replace(
+        queryParameters: {'phone': widget.phoneNumber},
+      );
+
       final res = await http.get(
-        Uri.parse('$SEND_OTP_URL?phone=${widget.phoneNumber}'),
+        uri,
       );
       if (res.statusCode == 200) _startResendTimer();
     } catch (_) {}
@@ -122,8 +126,15 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
     });
 
     try {
+      final uri = Uri.parse(VERIFY_OTP_URL).replace(
+        queryParameters: {
+          'phone': widget.phoneNumber,
+          'otp': otp,
+        },
+      );
+
       final response = await http.get(
-        Uri.parse('$VERIFY_OTP_URL?phone=${widget.phoneNumber}&otp=$otp'),
+        uri,
       );
 
       setState(() => _isVerifying = false);

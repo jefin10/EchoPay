@@ -98,8 +98,12 @@ class DjangoService {
     try {
       print('Calling Django getBalance for: $phoneNumber');
 
+      final uri = Uri.parse(GET_BALANCE_URL).replace(
+        queryParameters: {'phoneNumber': phoneNumber},
+      );
+
       final response = await http.get(
-        Uri.parse('$GET_BALANCE_URL?phoneNumber=$phoneNumber'),
+        uri,
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -180,9 +184,10 @@ class DjangoService {
     try {
       print('Calling Django getTransactions for: $phoneNumber');
 
-      final response = await http.get(
-        Uri.parse('$GET_TRANSACTIONS_URL?phoneNumber=$phoneNumber'),
+      final response = await http.post(
+        Uri.parse(GET_TRANSACTIONS_URL),
         headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phoneNumber': phoneNumber}),
       );
 
       print('Django response: ${response.statusCode} - ${response.body}');
@@ -214,8 +219,12 @@ class DjangoService {
   /// Calls: GET /accounts/searchPhonenumber/
   static Future<Map<String, dynamic>> searchByPhone(String phoneNumber) async {
     try {
+      final uri = Uri.parse(SEARCH_BY_PHONE_URL).replace(
+        queryParameters: {'phoneNumber': phoneNumber},
+      );
+
       final response = await http.get(
-        Uri.parse('$SEARCH_BY_PHONE_URL?phoneNumber=$phoneNumber'),
+        uri,
         headers: {'Content-Type': 'application/json'},
       );
 

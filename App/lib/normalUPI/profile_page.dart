@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
+import '../widgets/app_logo.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -124,6 +125,8 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
           child: Row(
             children: [
+              const AppLogo(type: LogoType.iconOnly, width: 24, height: 24),
+              const SizedBox(width: 8),
               const Text(
                 'Profile',
                 style: TextStyle(

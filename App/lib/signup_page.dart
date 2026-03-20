@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'constants/api_constants.dart';
 import 'constants/app_colors.dart';
+import 'widgets/app_logo.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -211,39 +212,10 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   Widget _buildHeader() {
     return Column(
       children: [
-        Container(
-          width: 70,
-          height: 70,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.account_balance_wallet_rounded,
-            color: AppColors.primary,
-            size: 36,
-          ),
-        ),
+        const AppLogo(type: LogoType.full, width: 90, height: 90),
         const SizedBox(height: 16),
-        const Text(
-          'EchoPay',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-          ),
-        ),
-        const SizedBox(height: 4),
         Text(
-          'Voice-powered payments',
+          'Sign up to get started',
           style: TextStyle(
             color: Colors.white.withOpacity(0.8),
             fontSize: 14,

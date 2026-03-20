@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
+import '../widgets/app_logo.dart';
 
 class PayToContactsPage extends StatefulWidget {
   @override
@@ -71,7 +72,7 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
       backgroundColor: AppColors.surfaceLight,
       body: Column(
         children: [
-          // Purple gradient header with search
+          // Blue gradient header with search
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -93,6 +94,9 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                           icon: const Icon(Icons.arrow_back, color: Colors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
+                        const SizedBox(width: 4),
+                        const AppLogo(type: LogoType.iconOnly, width: 24, height: 24),
+                        const SizedBox(width: 8),
                         const Expanded(
                           child: Text(
                             'Pay to Contacts',

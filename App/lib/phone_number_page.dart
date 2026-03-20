@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 import 'constants/api_constants.dart';
-import 'constants/app_colors.dart';
+import 'verify_otp_page.dart';
+
+import 'widgets/app_logo.dart';
 
 class PhoneNumberPage extends StatefulWidget {
   const PhoneNumberPage({super.key});
@@ -12,31 +15,64 @@ class PhoneNumberPage extends StatefulWidget {
   State<PhoneNumberPage> createState() => _PhoneNumberPageState();
 }
 
-class _PhoneNumberPageState extends State<PhoneNumberPage> with SingleTickerProviderStateMixin {
+class _PhoneNumberPageState extends State<PhoneNumberPage>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _phoneController = TextEditingController();
+  final FocusNode _phoneFocusNode = FocusNode();
+  final List<String> _countryCodes = const ['+91', '+1', '+44', '+61', '+971'];
+  String _selectedCountryCode = '+91';
   bool _isLoading = false;
   String? _error;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
+  bool _isFocused = false;
+
+  late AnimationController _entranceController;
+  late AnimationController _floatController;
+  late Animation<double> _fadeIn;
+  late Animation<Offset> _cardSlide;
+  late Animation<double> _logoFloat;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+
+    _entranceController = AnimationController(
+      duration: const Duration(milliseconds: 900),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    _floatController = AnimationController(
+      duration: const Duration(milliseconds: 2800),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _fadeIn = CurvedAnimation(
+      parent: _entranceController,
+      curve: Curves.easeOut,
     );
-    _animationController.forward();
+    _cardSlide = Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _entranceController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+    _logoFloat = Tween<double>(begin: -6.0, end: 6.0).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
+
+    _entranceController.forward();
+
+    _phoneFocusNode.addListener(() {
+      setState(() => _isFocused = _phoneFocusNode.hasFocus);
+    });
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _entranceController.dispose();
+    _floatController.dispose();
     _phoneController.dispose();
+    _phoneFocusNode.dispose();
     super.dispose();
   }
 
@@ -47,35 +83,55 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> with SingleTickerProv
         _error = null;
       });
 
+      final fullPhoneNumber =
+          '$_selectedCountryCode${_phoneController.text.trim()}';
+
       try {
         final response = await http.get(
-          Uri.parse('$SEND_OTP_URL?phone=${_phoneController.text}'),
+          Uri.parse('$SEND_OTP_URL?phone=$fullPhoneNumber'),
         );
 
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           if (data['status'] == 'success') {
-            // Navigate to OTP page
             if (mounted) {
-              Navigator.pushNamed(
+              Navigator.push(
                 context,
-                '/verify-otp',
-                arguments: {'phoneNumber': _phoneController.text},
+                PageRouteBuilder(
+                  transitionDuration: const Duration(milliseconds: 500),
+                  reverseTransitionDuration: const Duration(milliseconds: 400),
+                  pageBuilder: (context, animation, secondaryAnimation) {
+                    return VerifyOtpPage(phoneNumber: fullPhoneNumber);
+                  },
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    final tween = Tween<Offset>(
+                      begin: const Offset(0.0, 1.0),
+                      end: Offset.zero,
+                    ).chain(CurveTween(curve: Curves.easeOutCubic));
+                    final fade = Tween<double>(begin: 0.0, end: 1.0)
+                        .chain(CurveTween(curve: Curves.easeOut));
+                    return SlideTransition(
+                      position: animation.drive(tween),
+                      child: FadeTransition(
+                        opacity: animation.drive(fade),
+                        child: child,
+                      ),
+                    );
+                  },
+                  settings: RouteSettings(
+                    arguments: {'phoneNumber': fullPhoneNumber},
+                  ),
+                ),
               );
             }
           } else {
-            setState(() {
-              _error = data['message'] ?? 'Failed to send OTP';
-            });
+            setState(() => _error = data['message'] ?? 'Failed to send OTP');
           }
         } else {
-          setState(() {
-            _error = 'Failed to send OTP. Please try again.';
-          });
+          setState(() => _error = 'Failed to send OTP. Please try again.');
         }
       } catch (e) {
         setState(() {
@@ -88,92 +144,29 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.primary, AppColors.primaryDark],
-            stops: [0.0, 0.3],
-          ),
+      backgroundColor: const Color(0xFF1565C0),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
         ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
+        child: FadeTransition(
+          opacity: _fadeIn,
+          child: Form(
+            key: _formKey,
             child: Column(
               children: [
-                const SizedBox(height: 40),
-                _buildHeader(),
-                const SizedBox(height: 30),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
-                      ),
-                    ),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Welcome to EchoPay',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Enter your mobile number to continue',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 30),
-                            _buildPhoneInput(),
-                            const SizedBox(height: 10),
-                            if (_error != null) ...[
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.error.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.error_outline, color: AppColors.error, size: 20),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        _error!,
-                                        style: const TextStyle(color: AppColors.error, fontSize: 13),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                            ],
-                            const SizedBox(height: 20),
-                            _buildContinueButton(),
-                            const SizedBox(height: 30),
-                            _buildTermsText(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                // ── Blue hero section ──────────────────────────────
+                Expanded(flex: 62, child: _buildHero(size)),
+
+                // ── White bottom card ──────────────────────────────
+                SlideTransition(
+                  position: _cardSlide,
+                  child: _buildBottomCard(),
                 ),
               ],
             ),
@@ -183,165 +176,353 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> with SingleTickerProv
     );
   }
 
-  Widget _buildHeader() {
-    return Column(
-      children: [
-        Container(
-          width: 70,
-          height: 70,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+  // ──────────────────────────────────────────────────────────────────────
+  // HERO
+  // ──────────────────────────────────────────────────────────────────────
+  Widget _buildHero(Size size) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0D47A1), // deep navy blue
+            Color(0xFF1565C0),
+            Color(0xFF1976D2),
+            Color(0xFF1E88E5),
+          ],
+          stops: [0.0, 0.35, 0.70, 1.0],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Decorative circle top-right
+          Positioned(
+            top: -size.width * 0.25,
+            right: -size.width * 0.2,
+            child: _glowCircle(size.width * 0.7, const Color(0xFF42A5F5), 0.18),
+          ),
+          // Decorative circle bottom-left
+          Positioned(
+            bottom: size.height * 0.02,
+            left: -size.width * 0.25,
+            child: _glowCircle(size.width * 0.6, const Color(0xFF0D47A1), 0.35),
+          ),
+          // Fine dot mesh overlay
+          Positioned.fill(child: _meshOverlay()),
+
+          // Logo — centered, floating (no SafeArea so gradient bleeds under status bar)
+          Positioned.fill(
+            child: Padding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+              child: Center(
+                child: AnimatedBuilder(
+                  animation: _logoFloat,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(0, _logoFloat.value),
+                      child: child,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.14),
+                          blurRadius: 70,
+                          spreadRadius: 24,
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFF42A5F5).withOpacity(0.32),
+                          blurRadius: 90,
+                          spreadRadius: 12,
+                        ),
+                      ],
+                    ),
+                    child: AppLogo(
+                      type: LogoType.full,
+                      width: 300,
+                      height: 200,
+                    ),
+                  ),
+                ),
               ),
-            ],
+            ),
           ),
-          child: const Icon(
-            Icons.account_balance_wallet_rounded,
-            color: AppColors.primary,
-            size: 36,
-          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _glowCircle(double size, Color color, double opacity) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [color.withOpacity(opacity), color.withOpacity(0.0)],
         ),
-        const SizedBox(height: 16),
-        const Text(
-          'EchoPay',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
+      ),
+    );
+  }
+
+  Widget _meshOverlay() {
+    return CustomPaint(painter: _DotMeshPainter());
+  }
+
+  // ──────────────────────────────────────────────────────────────────────
+  // BOTTOM CARD
+  // ──────────────────────────────────────────────────────────────────────
+  Widget _buildBottomCard() {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xFFFAFBFF),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x330D47A1),
+            blurRadius: 24,
+            offset: Offset(0, -6),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Voice-powered payments',
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
-            fontSize: 14,
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(28, 28, 28, 36),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Label
+          const Text(
+            'Phone Number',
+            style: TextStyle(
+              color: Color(0xFF1A1A2E),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
+            ),
           ),
-        ),
-      ],
+
+          const SizedBox(height: 10),
+
+          // Input row
+          _buildPhoneInput(),
+
+          const SizedBox(height: 4),
+
+          // Animated underline
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            height: _isFocused ? 2 : 1,
+            decoration: BoxDecoration(
+              gradient: _isFocused
+                  ? const LinearGradient(
+                      colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                    )
+                  : const LinearGradient(
+                      colors: [Color(0xFFDDE3EE), Color(0xFFDDE3EE)],
+                    ),
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+
+          if (_error != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  color: Color(0xFFE53935),
+                  size: 14,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(
+                      color: Color(0xFFE53935),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          const SizedBox(height: 28),
+
+          // Continue button — right-aligned circular
+          Align(
+            alignment: Alignment.centerRight,
+            child: _buildContinueButton(),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildPhoneInput() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Text(
-          'Mobile Number',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+        // Country code
+        Theme(
+          data: Theme.of(context).copyWith(canvasColor: Colors.white),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedCountryCode,
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 18,
+                color: Color(0xFF1565C0),
+              ),
+              style: const TextStyle(
+                color: Color(0xFF1A1A2E),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _selectedCountryCode = value);
+                }
+              },
+              items: _countryCodes
+                  .map(
+                    (code) => DropdownMenuItem<String>(
+                      value: code,
+                      child: Text(code),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _phoneController,
-          keyboardType: TextInputType.phone,
-          maxLength: 10,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(
-            hintText: 'Enter your 10-digit mobile number',
-            hintStyle: TextStyle(color: AppColors.textGray),
-            prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primary),
-            filled: true,
-            fillColor: AppColors.surfaceLight,
-            counterText: '',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: AppColors.divider),
+
+        // Vertical divider
+        Container(
+          width: 1,
+          height: 22,
+          margin: const EdgeInsets.symmetric(horizontal: 10),
+          color: const Color(0xFFCDD5E0),
+        ),
+
+        // Phone field
+        Expanded(
+          child: TextFormField(
+            controller: _phoneController,
+            focusNode: _phoneFocusNode,
+            keyboardType: TextInputType.phone,
+            maxLength: 10,
+            style: const TextStyle(
+              color: Color(0xFF1A1A2E),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.8,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: AppColors.divider),
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              hintText: 'Enter mobile number',
+              hintStyle: TextStyle(
+                color: const Color(0xFF9EA8BA),
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+              ),
+              counterText: '',
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.error),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter phone number';
+              }
+              if (value.length != 10) {
+                return 'Phone number must be 10 digits';
+              }
+              return null;
+            },
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your mobile number';
-            }
-            if (value.length != 10) {
-              return 'Mobile number must be 10 digits';
-            }
-            return null;
-          },
         ),
       ],
     );
   }
 
   Widget _buildContinueButton() {
-    return SizedBox(
+    return Container(
+      width: 54,
       height: 54,
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _sendOtp,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1976D2), Color(0xFF0D47A1)],
         ),
-        child: _isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : const Text(
-                'Send OTP',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-      ),
-    );
-  }
-
-  Widget _buildTermsText() {
-    return Text.rich(
-      TextSpan(
-        text: 'By continuing, you agree to our ',
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-        children: const [
-          TextSpan(
-            text: 'Terms of Service',
-            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1565C0).withOpacity(0.45),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
-          TextSpan(text: ' and '),
-          TextSpan(
-            text: 'Privacy Policy',
-            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+          BoxShadow(
+            color: const Color(0xFF42A5F5).withOpacity(0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      textAlign: TextAlign.center,
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: _isLoading ? null : _sendOtp,
+          child: Center(
+            child: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+          ),
+        ),
+      ),
     );
   }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Subtle dot-mesh overlay painter for the hero section
+// ──────────────────────────────────────────────────────────────────────────────
+class _DotMeshPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.055)
+      ..style = PaintingStyle.fill;
+
+    const spacing = 28.0;
+    const radius = 1.5;
+
+    for (double x = 0; x < size.width + spacing; x += spacing) {
+      for (double y = 0; y < size.height + spacing; y += spacing) {
+        canvas.drawCircle(Offset(x, y), radius, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

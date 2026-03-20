@@ -7,6 +7,7 @@ import 'verify_otp_page.dart';
 import 'name_entry_page.dart';
 import 'normalUPI/landing.dart';
 import 'constants/app_colors.dart';
+import 'widgets/app_logo.dart';
 
 
 void main() {
@@ -62,6 +63,15 @@ class _MyAppState extends State<MyApp> {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 0,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(foregroundColor: AppColors.primary),
         ),
         useMaterial3: true,
         fontFamily: 'Roboto',
@@ -235,13 +245,13 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.fingerprint,
-                        size: 50,
-                        color: AppColors.primary,
+                      child: const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: AppLogo(type: LogoType.iconOnly),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 40),
                   const SizedBox(height: 40),
                   
                   // App Title

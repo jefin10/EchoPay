@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // PhonePe-inspired Color Scheme
+  // EchoPay brand color scheme (blue theme based on logo)
   
-  // Primary Colors - Deep Purple theme
-  static const Color primary = Color(0xFF5F259F);
-  static const Color primaryDark = Color(0xFF4A1D7A);
-  static const Color primaryLight = Color(0xFF7B3FBF);
+  // Primary Colors - EchoPay blue theme (inspired by logo)
+  static const Color primary = Color(0xFF0066FF); // main brand blue
+  static const Color primaryDark = Color(0xFF0052CC);
+  static const Color primaryLight = Color(0xFF338EFF);
   
-  // Legacy aliases for compatibility
-  static const Color primaryPurple = Color(0xFF5F259F);
-  static const Color primaryViolet = Color(0xFF7B3FBF);
-  static const Color primaryFuchsia = Color(0xFF9B4FDF);
+  // Legacy aliases for compatibility (no longer used but kept for reference)
+  static const Color primaryBlue = primary;
+  static const Color primarySky = primaryLight;
+  static const Color primaryNavy = primaryDark;
   
   // Background Colors
   static const Color backgroundDark = Color(0xFF1C1C1E);
@@ -53,7 +53,7 @@ class AppColors {
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF5F259F), Color(0xFF7B3FBF)],
+    colors: [primary, primaryLight],
   );
   
   static const LinearGradient headerGradient = LinearGradient(

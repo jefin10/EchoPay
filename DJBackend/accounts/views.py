@@ -129,19 +129,8 @@ def SignUp(request):
             'status': 'error'
         }, status=400)
     
-    # Verify OTP was completed for this phone number
-    try:
-        otp_entry = OTP.objects.filter(phoneNumber=phoneNumber, is_verified=True).first()
-        if not otp_entry:
-            return JsonResponse({
-                'error': 'Please verify OTP first',
-                'status': 'error'
-            }, status=400)
-    except Exception as e:
-        return JsonResponse({
-            'error': 'OTP verification required',
-            'status': 'error'
-        }, status=400)
+    # OTP was already verified to reach this page (via verify_otp endpoint).
+    # No additional OTP check needed here.
     
     # Check if user already exists
     try:

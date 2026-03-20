@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../widgets/app_logo.dart';
 import '../voiceToText/voiceToText.dart';
 import '../services/intent_service.dart';
 
@@ -94,13 +95,19 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Voice Assistant',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    children: const [
+                      AppLogo(type: LogoType.iconOnly, width: 24, height: 24),
+                      SizedBox(width: 8),
+                      Text(
+                        'Voice Assistant',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                   Row(
                     children: [

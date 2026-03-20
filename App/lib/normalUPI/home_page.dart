@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_colors.dart';
+import '../widgets/app_logo.dart';
 import '../voiceToText/voiceToText.dart';
 import '../payToContacts/payToContacts.dart';
 import '../payToPhoneNumber/payToPhonenumber.dart';
@@ -48,7 +49,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: AppColors.surfaceLight,
       body: CustomScrollView(
         slivers: [
-          // Purple Header
+          // Blue Header (brand color)
           SliverToBoxAdapter(child: _buildHeader()),
           // Content
           SliverToBoxAdapter(
@@ -93,6 +94,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Row(
                     children: [
+                      // replace user icon with logo symbol
                       Container(
                         width: 40,
                         height: 40,
@@ -100,7 +102,10 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.person, color: Colors.white, size: 22),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: AppLogo(type: LogoType.iconOnly),
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Column(

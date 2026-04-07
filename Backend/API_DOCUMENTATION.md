@@ -98,4 +98,4 @@ Returns:
 
 - Intent confidence below threshold is flagged for fallback handling through Rasa.
 - The service returns intent and entity guidance for the frontend to execute follow-up actions.
-- For exact implementation details, refer to `Intent_classifier/flask_server.py`.
+- For exact implementation details, refer to `ml-server/flask_server.py`.

@@ -9,8 +9,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all backend files
 COPY . .
 
-# Set working directory to Intent_classifier where flask_server.py is located
-WORKDIR /app/Intent_classifier
+# Set working directory to ml-server where flask_server.py is located
+WORKDIR /app/ml-server
 
 # Expose port 5002 (as defined in flask_server.py)
 EXPOSE 5002

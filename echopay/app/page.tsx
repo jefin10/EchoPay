@@ -5,6 +5,7 @@ import { useState } from "react";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const apkDownloadUrl = "https://github.com/jefin10/EchoPay/releases/latest/download/app-release.apk";
 
   return (
     <div className="min-h-screen bg-white">
@@ -26,7 +27,7 @@ export default function Home() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-gray-600 hover:text-[#0066FF] transition-colors">Features</a>
-              <a href="#download" className="bg-[#0066FF] text-white px-6 py-2.5 rounded-full hover:bg-[#0052CC] transition-colors font-medium">
+              <a href={apkDownloadUrl} target="_blank" rel="noopener noreferrer" className="bg-[#0066FF] text-white px-6 py-2.5 rounded-full hover:bg-[#0052CC] transition-colors font-medium">
                 Download App
               </a>
             </div>
@@ -48,7 +49,7 @@ export default function Home() {
           <div className="md:hidden border-t border-gray-100 bg-white">
             <div className="px-4 py-4 space-y-3">
               <a href="#features" className="block text-gray-600 hover:text-[#0066FF] py-2">Features</a>
-              <a href="#download" className="block bg-[#0066FF] text-white px-6 py-2.5 rounded-full text-center hover:bg-[#0052CC] transition-colors font-medium">
+              <a href={apkDownloadUrl} target="_blank" rel="noopener noreferrer" className="block bg-[#0066FF] text-white px-6 py-2.5 rounded-full text-center hover:bg-[#0052CC] transition-colors font-medium">
                 Download App
               </a>
             </div>
@@ -69,7 +70,9 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a 
-                  href="#download" 
+                  href={apkDownloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center bg-[#0066FF] text-white px-8 py-4 rounded-full hover:bg-[#0052CC] transition-colors font-semibold text-lg"
                 >
                   Download App
@@ -235,7 +238,9 @@ export default function Home() {
           </p>
           
           <a 
-            href="#" 
+            href={apkDownloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center justify-center bg-[#0066FF] text-white px-10 py-5 rounded-full hover:bg-[#0052CC] transition-colors font-semibold text-xl shadow-lg"
           >
             Download App
@@ -267,7 +272,7 @@ export default function Home() {
             
             <div className="flex items-center gap-6 text-sm text-gray-400">
               <a href="#features" className="hover:text-white transition-colors">Features</a>
-              <a href="#download" className="hover:text-white transition-colors">Download</a>
+              <a href={apkDownloadUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Download</a>
             </div>
           </div>
           

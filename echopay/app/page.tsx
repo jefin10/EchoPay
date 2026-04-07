@@ -35,6 +35,7 @@ export default function Home() {
             {/* Mobile menu button */}
             <button 
               className="md:hidden p-2"
+              aria-label="Open navigation menu"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,8 +49,8 @@ export default function Home() {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white">
             <div className="px-4 py-4 space-y-3">
-              <a href="#features" className="block text-gray-600 hover:text-[#0066FF] py-2">Features</a>
-              <a href={apkDownloadUrl} target="_blank" rel="noopener noreferrer" className="block bg-[#0066FF] text-white px-6 py-2.5 rounded-full text-center hover:bg-[#0052CC] transition-colors font-medium">
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-gray-600 hover:text-[#0066FF] py-2">Features</a>
+              <a href={apkDownloadUrl} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="block bg-[#0066FF] text-white px-6 py-2.5 rounded-full text-center hover:bg-[#0052CC] transition-colors font-medium">
                 Download App
               </a>
             </div>
@@ -60,7 +61,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
                 Voice-Powered UPI Payments
@@ -99,7 +100,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-gray-50">
+      <section id="features" className="py-20 bg-gray-50 scroll-mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -228,7 +229,7 @@ export default function Home() {
       </section>
 
       {/* Download Section */}
-      <section id="download" className="py-20">
+      <section id="download" className="py-20 scroll-mt-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
             Ready to Experience the Future of Payments?

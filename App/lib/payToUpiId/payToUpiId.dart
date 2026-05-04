@@ -4,18 +4,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_typography.dart';
 
 class PayToUpiIdPage extends StatefulWidget {
   final String? prefilledUpiId;
   final String? prefilledAmount;
   final String? prefilledName;
-  
+
   const PayToUpiIdPage({
-    Key? key,
+    super.key,
     this.prefilledUpiId,
     this.prefilledAmount,
     this.prefilledName,
-  }) : super(key: key);
+  });
 
   @override
   State<PayToUpiIdPage> createState() => _PayToUpiIdPageState();
@@ -54,7 +55,6 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
       _error = null;
       _userData = null;
     });
-    
     final upiId = _upiController.text.trim();
     if (upiId.isEmpty) {
       setState(() {
@@ -63,15 +63,12 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
       });
       return;
     }
-
     try {
       final url = Uri.parse('$SEARCH_BY_UPI_URL?upiId=$upiId');
       final response = await http.get(url);
-      
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
         setState(() {
-          _userData = data;
+          _userData = json.decode(response.body);
           _loading = false;
         });
       } else {
@@ -94,17 +91,12 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
       _showSnackBar('Please complete all required fields');
       return;
     }
-
     final amount = double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
       _showSnackBar('Please enter a valid amount');
       return;
     }
-
-    setState(() {
-      _loading = true;
-    });
-
+    setState(() => _loading = true);
     try {
       final prefs = await SharedPreferences.getInstance();
       final senderPhone = prefs.getString('phoneNumber') ?? '';
@@ -124,21 +116,15 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
       );
 
       if (response.statusCode == 200) {
-        setState(() {
-          _loading = false;
-        });
-        _showPaymentSuccessDialog();
+        setState(() => _loading = false);
+        if (mounted) _showPaymentSuccessDialog();
       } else {
-        setState(() {
-          _loading = false;
-        });
+        setState(() => _loading = false);
         final data = json.decode(response.body);
         _showSnackBar(data['error'] ?? 'Payment failed.');
       }
     } catch (e) {
-      setState(() {
-        _loading = false;
-      });
+      setState(() => _loading = false);
       _showSnackBar('Payment failed: $e');
     }
   }
@@ -147,37 +133,37 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          content: Column(
+      builder: (BuildContext context) => Dialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(50),
+                  color: AppColors.mint.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(Icons.check_circle, color: AppColors.success, size: 48),
+                child: const Icon(Icons.check_rounded,
+                    color: AppColors.mint, size: 32),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Payment Successful!',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              Text('Payment sent', style: AppTypography.heading(size: 22)),
+              const SizedBox(height: 4),
               Text(
-                '₹${_amountController.text} sent to ${_userData!['upiName']}',
+                '₹${_amountController.text} to ${_userData!['upiName']}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -186,30 +172,22 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: AppColors.ink,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
                   ),
-                  child: const Text('Done', style: TextStyle(fontWeight: FontWeight.w600)),
+                  child: const Text('Done'),
                 ),
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+      SnackBar(content: Text(message)),
     );
   }
 
@@ -217,175 +195,166 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceLight,
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Pay to UPI ID',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [AppColors.primary, AppColors.primaryDark],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _topBar(),
+              const SizedBox(height: 22),
+              Text('to a upi id', style: AppTypography.eyebrow()),
+              const SizedBox(height: 6),
+              Text(
+                'Pay any\nUPI handle.',
+                style: AppTypography.heading(size: 30, weight: FontWeight.w800)
+                    .copyWith(height: 1.05),
+              ),
+              const SizedBox(height: 22),
+              _searchField(),
+              if (_error != null) ...[
+                const SizedBox(height: 14),
+                _errorChip(_error!),
+              ],
+              if (_userData != null) ...[
+                const SizedBox(height: 22),
+                _userInfoCard(),
+              ],
+              const SizedBox(height: 22),
+              _label('Amount'),
+              const SizedBox(height: 8),
+              _input(_amountController, '0', TextInputType.number, prefix: '₹ '),
+              const SizedBox(height: 16),
+              _label('Note (optional)'),
+              const SizedBox(height: 8),
+              _input(_remarkController, 'Add a note', TextInputType.text),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: (_userData != null && !_loading) ? _processPayment : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.ink,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.borderStrong,
+                    disabledForegroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Pay now'),
                 ),
               ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _upiController,
-                    hint: 'Enter UPI ID (e.g., user@upi)',
-                    keyboardType: TextInputType.emailAddress,
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.search, color: Colors.white),
-                      onPressed: _searchUser,
-                    ),
-                    isDark: true,
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (_userData != null) ...[
-                    _buildUserInfoCard(),
-                    const SizedBox(height: 20),
-                  ],
-                  if (_error != null) ...[
-                    _buildErrorCard(),
-                    const SizedBox(height: 20),
-                  ],
-                  _buildInputField(
-                    controller: _amountController,
-                    label: 'Amount',
-                    hint: 'Enter amount',
-                    keyboardType: TextInputType.number,
-                    prefixText: '₹ ',
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _remarkController,
-                    label: 'Note (Optional)',
-                    hint: 'Add a note',
-                    keyboardType: TextInputType.text,
-                  ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: (_userData != null && !_loading) ? _processPayment : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        elevation: 0,
-                      ),
-                      child: _loading
-                          ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                            )
-                          : const Text(
-                              'Pay Now',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    String? label,
-    required String hint,
-    required TextInputType keyboardType,
-    Widget? suffixIcon,
-    String? prefixText,
-    bool isDark = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _topBar() {
+    return Row(
       children: [
-        if (label != null) ...[
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimary),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(color: isDark ? Colors.white60 : AppColors.textSecondary),
-            prefixText: prefixText,
-            prefixStyle: TextStyle(color: isDark ? Colors.white : AppColors.textPrimary, fontSize: 16),
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: isDark ? Colors.white.withOpacity(0.15) : Colors.white,
-            border: OutlineInputBorder(
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(12),
-              borderSide: isDark ? BorderSide.none : const BorderSide(color: AppColors.border),
+              border: Border.all(color: AppColors.border),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: isDark ? BorderSide.none : const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: isDark ? Colors.white : AppColors.primary, width: 2),
-            ),
+            child: const Icon(Icons.arrow_back_rounded,
+                color: AppColors.ink, size: 20),
           ),
         ),
+        const SizedBox(width: 12),
+        Text('pay to upi id', style: AppTypography.heading(size: 18)),
       ],
     );
   }
 
-  Widget _buildUserInfoCard() {
+  Widget _searchField() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderStrong, width: 1.5),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          const Icon(Icons.alternate_email_rounded,
+              color: AppColors.textSecondary, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: _upiController,
+              keyboardType: TextInputType.emailAddress,
+              style: const TextStyle(
+                color: AppColors.ink,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: const InputDecoration(
+                hintText: 'someone@upi',
+                hintStyle: TextStyle(
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w500,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 18),
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: _loading ? null : _searchUser,
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.ink,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: _loading
+                  ? const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.search_rounded,
+                      color: Colors.white, size: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _userInfoCard() {
+    final name = _userData!['upiName'] ?? 'Unknown user';
+    final phone = _userData!['phoneNumber'] ?? 'N/A';
+    final initial = name.isNotEmpty ? name[0].toString().toUpperCase() : '?';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.success.withOpacity(0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
@@ -393,67 +362,136 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(24),
+              color: AppColors.surfaceDim,
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Center(
-              child: Text(
-                (_userData!['upiName'] ?? 'U')[0].toUpperCase(),
-                style: const TextStyle(
-                  color: AppColors.success,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
+            alignment: Alignment.center,
+            child: Text(
+              initial,
+              style: const TextStyle(
+                color: AppColors.ink,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _userData!['upiName'] ?? 'Unknown User',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text(name, style: AppTypography.heading(size: 16)),
                 const SizedBox(height: 2),
                 Text(
-                  _userData!['phoneNumber'] ?? 'N/A',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  phone,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
+              color: AppColors.mint.withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(Icons.verified, color: AppColors.success, size: 18),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.verified_rounded,
+                    color: AppColors.mint, size: 12),
+                const SizedBox(width: 4),
+                Text(
+                  'verified',
+                  style: AppTypography.eyebrow(
+                    color: AppColors.mint,
+                    size: 9,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorCard() {
+  Widget _label(String text) => Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.ink,
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+      );
+
+  Widget _input(
+    TextEditingController controller,
+    String hint,
+    TextInputType keyboardType, {
+    String? prefix,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.error.withOpacity(0.1),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: const TextStyle(
+          color: AppColors.ink,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w500,
+          ),
+          prefixText: prefix,
+          prefixStyle: const TextStyle(
+            color: AppColors.ink,
+            fontWeight: FontWeight.w800,
+            fontSize: 15,
+          ),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+      ),
+    );
+  }
+
+  Widget _errorChip(String message) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.coral.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.coral.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+          const Icon(Icons.info_outline_rounded,
+              color: AppColors.coral, size: 18),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 14)),
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: AppColors.coral,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

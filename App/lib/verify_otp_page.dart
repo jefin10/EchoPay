@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'constants/api_constants.dart';
-
+import 'constants/app_colors.dart';
+import 'constants/app_typography.dart';
 
 class VerifyOtpPage extends StatefulWidget {
   final String phoneNumber;
@@ -16,8 +17,7 @@ class VerifyOtpPage extends StatefulWidget {
 }
 
 class _VerifyOtpPageState extends State<VerifyOtpPage>
-    with TickerProviderStateMixin {
-  // 6-digit OTP boxes
+    with SingleTickerProviderStateMixin {
   final List<TextEditingController> _otpControllers =
       List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
@@ -28,39 +28,18 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
   int _resendTimer = 30;
   Timer? _timer;
 
-  late AnimationController _entranceController;
   late AnimationController _shakeController;
-  late Animation<double> _fadeIn;
-  late Animation<Offset> _cardSlide;
   late Animation<double> _shakeAnim;
 
   @override
   void initState() {
     super.initState();
-
-    _entranceController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-
-    _fadeIn = CurvedAnimation(
-      parent: _entranceController,
-      curve: Curves.easeOut,
-    );
-    _cardSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
-        .animate(
-      CurvedAnimation(parent: _entranceController, curve: Curves.easeOutCubic),
-    );
     _shakeAnim = Tween<double>(begin: 0, end: 1).animate(_shakeController);
-
-    _entranceController.forward();
     _startResendTimer();
-
-    // Focus first box
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNodes[0].requestFocus();
     });
@@ -69,7 +48,6 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
   @override
   void dispose() {
     _timer?.cancel();
-    _entranceController.dispose();
     _shakeController.dispose();
     for (var c in _otpControllers) {
       c.dispose();
@@ -104,10 +82,7 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
       final uri = Uri.parse(SEND_OTP_URL).replace(
         queryParameters: {'phone': widget.phoneNumber},
       );
-
-      final res = await http.get(
-        uri,
-      );
+      final res = await http.get(uri);
       if (res.statusCode == 200) _startResendTimer();
     } catch (_) {}
     setState(() => _isSending = false);
@@ -127,16 +102,9 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
 
     try {
       final uri = Uri.parse(VERIFY_OTP_URL).replace(
-        queryParameters: {
-          'phone': widget.phoneNumber,
-          'otp': otp,
-        },
+        queryParameters: {'phone': widget.phoneNumber, 'otp': otp},
       );
-
-      final response = await http.get(
-        uri,
-      );
-
+      final response = await http.get(uri);
       setState(() => _isVerifying = false);
 
       if (response.statusCode == 200) {
@@ -146,20 +114,18 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
           await prefs.setString('phoneNumber', widget.phoneNumber);
 
           if (data['isNewUser'] == true) {
-            if (mounted) {
-              Navigator.pushReplacementNamed(
-                context,
-                '/name-entry',
-                arguments: {'phoneNumber': widget.phoneNumber},
-              );
-            }
+            if (!mounted) return;
+            Navigator.pushReplacementNamed(
+              context,
+              '/name-entry',
+              arguments: {'phoneNumber': widget.phoneNumber},
+            );
           } else {
             await prefs.setBool('isLoggedIn', true);
             await prefs.setString('userName', data['upiName']);
             await prefs.setString('upiId', data['upiId']);
-            if (mounted) {
-              Navigator.pushReplacementNamed(context, '/biometric');
-            }
+            if (!mounted) return;
+            Navigator.pushReplacementNamed(context, '/biometric');
           }
         } else {
           _triggerShake(data['message'] ?? 'Invalid OTP');
@@ -186,268 +152,133 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
 
   @override
   Widget build(BuildContext context) {
-    final maskedPhone = widget.phoneNumber.length > 4
-        ? widget.phoneNumber.replaceRange(
-            0, widget.phoneNumber.length - 4, '•' * (widget.phoneNumber.length - 4))
-        : widget.phoneNumber;
-
     return Scaffold(
-      backgroundColor: const Color(0xFF1565C0),
+      backgroundColor: AppColors.surfaceLight,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
+        value: SystemUiOverlayStyle.dark.copyWith(
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.dark,
         ),
-        child: FadeTransition(
-          opacity: _fadeIn,
-          child: Column(
-            children: [
-              // ── Blue hero ─────────────────────────────────────────
-              Expanded(
-                flex: 38,
-                child: _buildHero(maskedPhone),
-              ),
-
-              // ── White bottom card ─────────────────────────────────
-              SlideTransition(
-                position: _cardSlide,
-                child: _buildBottomCard(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ──────────────────────────────────────────────────────────────────────
-  // HERO
-  // ──────────────────────────────────────────────────────────────────────
-  Widget _buildHero(String maskedPhone) {
-    final topPad = MediaQuery.of(context).padding.top;
-
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0D47A1),
-            Color(0xFF1565C0),
-            Color(0xFF1976D2),
-            Color(0xFF1E88E5),
-          ],
-          stops: [0.0, 0.35, 0.70, 1.0],
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Decorative glow blobs
-          Positioned(
-            top: -60,
-            right: -60,
-            child: _glowCircle(220, const Color(0xFF42A5F5), 0.15),
-          ),
-          Positioned(
-            bottom: 0,
-            left: -80,
-            child: _glowCircle(200, const Color(0xFF0D47A1), 0.35),
-          ),
-          // Dot mesh
-          Positioned.fill(child: CustomPaint(painter: _DotMeshPainter())),
-
-          // Content
-          Padding(
-            padding: EdgeInsets.fromLTRB(20, topPad + 8, 20, 28),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Back button
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.18),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.25),
-                        width: 1,
+                _buildBackButton(),
+                const SizedBox(height: 28),
+
+                Text(
+                  'verify',
+                  style: AppTypography.eyebrow(color: AppColors.primary),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Enter the\n6-digit code.',
+                  style: AppTypography.heading(
+                    size: 38,
+                    weight: FontWeight.w800,
+                  ).copyWith(height: 1.05),
+                ),
+                const SizedBox(height: 14),
+                RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                    children: [
+                      const TextSpan(text: 'Sent to '),
+                      TextSpan(
+                        text: widget.phoneNumber,
+                        style: const TextStyle(
+                          color: AppColors.ink,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white,
-                      size: 16,
-                    ),
+                      const TextSpan(text: '. Check your messages.'),
+                    ],
                   ),
                 ),
+                const SizedBox(height: 36),
+
+                _buildOtpRow(),
+
+                if (_error != null) ...[
+                  const SizedBox(height: 14),
+                  _buildErrorChip(_error!),
+                ],
+
+                const SizedBox(height: 24),
+                _buildResendRow(),
 
                 const Spacer(),
 
-                // OTP sent message
-                Text(
-                  "We've Sent an OTP on\nyour Mobile No. ${widget.phoneNumber}",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    height: 1.4,
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isVerifying ? null : _verifyOtp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.ink,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: _isVerifying
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text('Verify & continue'),
+                              SizedBox(width: 10),
+                              Icon(Icons.arrow_forward_rounded, size: 20),
+                            ],
+                          ),
                   ),
                 ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  'Check your SMS inbox',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.55),
-                    fontSize: 13,
-                  ),
-                ),
-
-                const SizedBox(height: 4),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _glowCircle(double size, Color color, double opacity) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color.withOpacity(opacity), color.withOpacity(0.0)],
         ),
       ),
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────────
-  // BOTTOM CARD
-  // ──────────────────────────────────────────────────────────────────────
-  Widget _buildBottomCard() {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFFFAFBFF),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x330D47A1),
-            blurRadius: 24,
-            offset: Offset(0, -6),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.fromLTRB(
-          28, 28, 28, MediaQuery.of(context).padding.bottom + 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'One Time Password:',
-            style: TextStyle(
-              color: Color(0xFF1A1A2E),
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.1,
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // 4 OTP boxes
-          _buildOtpBoxes(),
-
-          if (_error != null) ...[
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                const Icon(Icons.error_outline,
-                    color: Color(0xFFE53935), size: 14),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(
-                      color: Color(0xFFE53935),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-
-          const SizedBox(height: 32),
-
-          // Resend row + submit button
-          Row(
-            children: [
-              // Resend
-              Expanded(
-                child: _resendTimer > 0
-                    ? RichText(
-                        text: TextSpan(
-                          style: const TextStyle(
-                              fontSize: 13, color: Color(0xFF9EA8BA)),
-                          children: [
-                            const TextSpan(text: 'Resend in '),
-                            TextSpan(
-                              text: '${_resendTimer}s',
-                              style: const TextStyle(
-                                color: Color(0xFF1565C0),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : GestureDetector(
-                        onTap: _isSending ? null : _resendOtp,
-                        child: Text(
-                          _isSending ? 'Sending…' : 'Resend OTP',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: _isSending
-                                ? const Color(0xFF9EA8BA)
-                                : const Color(0xFF1565C0),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-              ),
-
-              // Circular submit button
-              _buildSubmitButton(),
-            ],
-          ),
-        ],
+  Widget _buildBackButton() {
+    return GestureDetector(
+      onTap: () => Navigator.pop(context),
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: const Icon(
+          Icons.arrow_back_rounded,
+          color: AppColors.ink,
+          size: 20,
+        ),
       ),
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────────
-  // 4 CIRCULAR OTP BOXES
-  // ──────────────────────────────────────────────────────────────────────
-  Widget _buildOtpBoxes() {
+  Widget _buildOtpRow() {
     return AnimatedBuilder(
       animation: _shakeAnim,
       builder: (context, child) {
         final dx = _shakeController.isAnimating
-            ? 8.0 *
-                (0.5 -
-                    (_shakeAnim.value * 4).round() / 4.0)
+            ? 8.0 * (0.5 - (_shakeAnim.value * 4).round() / 4.0)
             : 0.0;
         return Transform.translate(offset: Offset(dx, 0), child: child);
       },
@@ -463,30 +294,22 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
       listenable: _focusNodes[index],
       builder: (context, _) {
         final isFoc = _focusNodes[index].hasFocus;
+        final hasValue = _otpControllers[index].text.isNotEmpty;
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 48,
-          height: 48,
+          duration: const Duration(milliseconds: 180),
+          width: 46,
+          height: 56,
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isFoc
-                ? const Color(0xFFEAF2FF)
-                : const Color(0xFFF0F4FA),
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isFoc
-                  ? const Color(0xFF1565C0)
-                  : const Color(0xFFD8E2F0),
+                  ? AppColors.ink
+                  : hasValue
+                      ? AppColors.borderStrong
+                      : AppColors.border,
               width: isFoc ? 2 : 1.5,
             ),
-            boxShadow: isFoc
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF1565C0).withOpacity(0.2),
-                      blurRadius: 10,
-                      spreadRadius: 1,
-                    )
-                  ]
-                : [],
           ),
           child: Center(
             child: TextField(
@@ -495,12 +318,10 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
               maxLength: 1,
-              obscureText: true,
-              obscuringCharacter: '●',
               style: const TextStyle(
-                color: Color(0xFF1A1A2E),
+                color: AppColors.ink,
                 fontSize: 22,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
               ),
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: const InputDecoration(
@@ -516,7 +337,6 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
                 } else if (val.isEmpty && index > 0) {
                   _focusNodes[index - 1].requestFocus();
                 }
-                // Auto-submit when all 6 filled
                 if (index == 5 && val.isNotEmpty) {
                   final otp = _otpControllers.map((c) => c.text).join();
                   if (otp.length == 6) _verifyOtp();
@@ -529,81 +349,69 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────────
-  // SUBMIT BUTTON
-  // ──────────────────────────────────────────────────────────────────────
-  Widget _buildSubmitButton() {
-    return Container(
-      width: 54,
-      height: 54,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1976D2), Color(0xFF0D47A1)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1565C0).withOpacity(0.45),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+  Widget _buildResendRow() {
+    return Row(
+      children: [
+        Text(
+          "Didn't get it?",
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
           ),
-          BoxShadow(
-            color: const Color(0xFF42A5F5).withOpacity(0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+        ),
+        const SizedBox(width: 6),
+        if (_resendTimer > 0)
+          Text(
+            'Resend in ${_resendTimer}s',
+            style: const TextStyle(
+              color: AppColors.ink,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          )
+        else
+          GestureDetector(
+            onTap: _isSending ? null : _resendOtp,
+            child: Text(
+              _isSending ? 'Sending' : 'Resend code',
+              style: TextStyle(
+                color: _isSending ? AppColors.textMuted : AppColors.primary,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                decoration: _isSending ? null : TextDecoration.underline,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildErrorChip(String message) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.coral.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.coral.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline_rounded,
+              color: AppColors.coral, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: AppColors.coral,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: _isVerifying ? null : _verifyOtp,
-          child: Center(
-            child: _isVerifying
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
-                    ),
-                  )
-                : const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-          ),
-        ),
-      ),
     );
   }
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Dot mesh painter (same as phone_number_page)
-// ──────────────────────────────────────────────────────────────────────────────
-class _DotMeshPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.055)
-      ..style = PaintingStyle.fill;
-
-    const spacing = 28.0;
-    const radius = 1.5;
-
-    for (double x = 0; x < size.width + spacing; x += spacing) {
-      for (double y = 0; y < size.height + spacing; y += spacing) {
-        canvas.drawCircle(Offset(x, y), radius, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

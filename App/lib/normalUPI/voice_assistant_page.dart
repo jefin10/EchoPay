@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../widgets/app_logo.dart';
+import '../constants/app_typography.dart';
 import '../voiceToText/voiceToText.dart';
 import '../services/intent_service.dart';
 
@@ -11,11 +11,10 @@ class VoiceAssistantPage extends StatefulWidget {
   State<VoiceAssistantPage> createState() => _VoiceAssistantPageState();
 }
 
-class _VoiceAssistantPageState extends State<VoiceAssistantPage> 
+class _VoiceAssistantPageState extends State<VoiceAssistantPage>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  bool _isListening = false;
   bool _serverConnected = false;
 
   @override
@@ -24,22 +23,16 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
     _pulseController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.96, end: 1.06).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.15,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
     _checkServerConnection();
   }
 
-  void _checkServerConnection() async {
+  Future<void> _checkServerConnection() async {
     final isConnected = await IntentService.checkServerHealth();
-    setState(() {
-      _serverConnected = isConnected;
-    });
+    if (mounted) setState(() => _serverConnected = isConnected);
   }
 
   @override
@@ -52,110 +45,46 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceLight,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _buildHeader()),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  _buildVoiceInterface(),
-                  const SizedBox(height: 40),
-                  _buildQuickCommands(),
-                  const Spacer(),
-                  _buildStartButton(),
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppColors.primary, AppColors.primaryDark],
-        ),
-      ),
-      child: SafeArea(
+      body: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: const [
-                      AppLogo(type: LogoType.iconOnly, width: 24, height: 24),
-                      SizedBox(width: 8),
-                      Text(
-                        'Voice Assistant',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      _buildServerStatus(),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: _showHelpDialog,
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.help_outline,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              _buildTopRow(),
+              const SizedBox(height: 28),
+              Text(
+                'speak it.\nwe pay it.',
+                style: AppTypography.heading(
+                  size: 38,
+                  weight: FontWeight.w800,
+                ).copyWith(height: 1.05),
               ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.lightbulb_outline, color: Colors.white.withOpacity(0.9), size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'AI-powered voice assistant for instant payments',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 12),
+              Text(
+                'Say a name, an amount, and we will line it up.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
                 ),
               ),
+
+              const Spacer(),
+              Center(child: _buildMicButton()),
+              const SizedBox(height: 18),
+              Center(
+                child: Text(
+                  'tap to speak',
+                  style: AppTypography.eyebrow(color: AppColors.textSecondary),
+                ),
+              ),
+              const Spacer(),
+
+              _buildSamples(),
+              const SizedBox(height: 16),
+              _buildStartButton(),
             ],
           ),
         ),
@@ -163,35 +92,188 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
     );
   }
 
-  Widget _buildServerStatus() {
+  Widget _buildTopRow() {
+    return Row(
+      children: [
+        Text('voice', style: AppTypography.heading(size: 22)),
+        const SizedBox(width: 6),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: AppColors.pop,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const Spacer(),
+        _statusChip(),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: _showHelpDialog,
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Icon(
+              Icons.help_outline_rounded,
+              color: AppColors.ink,
+              size: 18,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statusChip() {
     return GestureDetector(
       onTap: _checkServerConnection,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: (_serverConnected ? AppColors.success : AppColors.error).withOpacity(0.2),
-          borderRadius: BorderRadius.circular(20),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(40),
+          border: Border.all(color: AppColors.border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 8,
-              height: 8,
+              width: 7,
+              height: 7,
               decoration: BoxDecoration(
-                color: _serverConnected ? AppColors.success : AppColors.error,
+                color: _serverConnected ? AppColors.mint : AppColors.coral,
                 shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 7),
             Text(
               _serverConnected ? 'Online' : 'Offline',
-              style: TextStyle(
-                color: _serverConnected ? AppColors.success : AppColors.error,
+              style: const TextStyle(
+                color: AppColors.ink,
                 fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMicButton() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const SpeechScreen()),
+      ),
+      child: AnimatedBuilder(
+        animation: _pulseAnimation,
+        builder: (context, child) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 200 * _pulseAnimation.value,
+                height: 200 * _pulseAnimation.value,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.pop.withOpacity(0.18),
+                ),
+              ),
+              Container(
+                width: 160,
+                height: 160,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.ink,
+                ),
+                child: const Icon(
+                  Icons.mic_rounded,
+                  color: AppColors.pop,
+                  size: 64,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSamples() {
+    final samples = const [
+      'Send ₹500 to 9876543210',
+      "What's my balance?",
+      'Request ₹300 from Mom',
+    ];
+    return SizedBox(
+      height: 38,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: samples.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (_, i) => GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SpeechScreen()),
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(40),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.graphic_eq_rounded,
+                    color: AppColors.primary, size: 14),
+                const SizedBox(width: 6),
+                Text(
+                  '"${samples[i]}"',
+                  style: const TextStyle(
+                    color: AppColors.ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStartButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SpeechScreen()),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.ink,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.mic_rounded, size: 20),
+            SizedBox(width: 10),
+            Text('Start voice command'),
           ],
         ),
       ),
@@ -201,40 +283,41 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
   void _showHelpDialog() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.all(24),
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Voice Commands',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
+                ),
               ),
-              const SizedBox(height: 16),
-              _buildHelpItem('💰', 'Send Money', '"Send 500 to John"'),
-              _buildHelpItem('💳', 'Check Balance', '"What\'s my balance?"'),
-              _buildHelpItem('💸', 'Request Money', '"Request 300 from Mom"'),
-              _buildHelpItem('💬', 'General Chat', '"Hello, how are you?"'),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+              Text('voice playbook', style: AppTypography.eyebrow()),
+              const SizedBox(height: 8),
+              Text('Things you can say', style: AppTypography.heading(size: 22)),
+              const SizedBox(height: 22),
+              _helpItem(Icons.send_rounded, 'Send money',
+                  '"Send 500 to John"'),
+              _helpItem(Icons.account_balance_wallet_outlined, 'Check balance',
+                  "\"What's my balance?\""),
+              _helpItem(Icons.call_received_rounded, 'Request money',
+                  '"Request 300 from Mom"'),
+              _helpItem(Icons.chat_bubble_outline_rounded, 'Just chat',
+                  '"Hello, how are you?"'),
+              const SizedBox(height: 8),
             ],
           ),
         );
@@ -242,13 +325,21 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
     );
   }
 
-  Widget _buildHelpItem(String emoji, String title, String example) {
+  Widget _helpItem(IconData icon, String title, String example) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 12),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDim,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: AppColors.ink, size: 20),
+          ),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,209 +347,24 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
                 Text(
                   title,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink,
+                    fontSize: 14,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   example,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildVoiceInterface() {
-    return Column(
-      children: [
-        const Text(
-          'Tap to speak',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'I can send money, check balance, or just chat!',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 40),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SpeechScreen()),
-            );
-          },
-          child: AnimatedBuilder(
-            animation: _pulseAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _isListening ? _pulseAnimation.value : 1.0,
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppColors.primary, AppColors.primaryLight],
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.3),
-                        blurRadius: 25,
-                        spreadRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.mic,
-                    color: Colors.white,
-                    size: 60,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickCommands() {
-    final commands = [
-      {'icon': Icons.send, 'text': 'Send ₹500 to 9876543210', 'color': AppColors.success},
-      {'icon': Icons.account_balance_wallet, 'text': 'Check my balance', 'color': AppColors.accentBlue},
-      {'icon': Icons.call_received, 'text': 'Request ₹300 from friend', 'color': AppColors.primary},
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Try saying',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...commands.map((cmd) => _buildCommandChip(
-            cmd['icon'] as IconData,
-            cmd['text'] as String,
-            cmd['color'] as Color,
-          )),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommandChip(IconData icon, String text, Color color) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SpeechScreen()),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.divider),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                '"$text"',
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            Icon(Icons.chevron_right, color: AppColors.textGray, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStartButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SpeechScreen()),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.mic, size: 22),
-            SizedBox(width: 10),
-            Text(
-              'Start Voice Command',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

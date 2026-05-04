@@ -14,10 +14,10 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const VoiceAssistantPage(),
-    const ProfilePage(),
+  final List<Widget> _pages = const [
+    HomePage(),
+    VoiceAssistantPage(),
+    ProfilePage(),
   ];
 
   @override
@@ -30,35 +30,35 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildBottomNavigationBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.ink,
+            borderRadius: BorderRadius.circular(28),
           ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                label: 'Home',
-                index: 0,
+              Expanded(
+                child: _buildNavItem(
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home_rounded,
+                  label: 'Home',
+                  index: 0,
+                ),
               ),
               _buildVoiceNavItem(),
-              _buildNavItem(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                label: 'Profile',
-                index: 2,
+              Expanded(
+                child: _buildNavItem(
+                  icon: Icons.person_outline_rounded,
+                  activeIcon: Icons.person_rounded,
+                  label: 'Profile',
+                  index: 2,
+                ),
               ),
             ],
           ),
@@ -74,26 +74,29 @@ class _DashboardPageState extends State<DashboardPage> {
     required int index,
   }) {
     final isSelected = _currentIndex == index;
-    return InkWell(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _currentIndex = index),
-      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               isSelected ? activeIcon : icon,
-              color: isSelected ? AppColors.primary : AppColors.textGray,
-              size: 26,
+              color: isSelected ? AppColors.pop : Colors.white.withOpacity(0.55),
+              size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.primary : AppColors.textGray,
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected
+                    ? AppColors.pop
+                    : Colors.white.withOpacity(0.55),
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                letterSpacing: 0.2,
               ),
             ),
           ],
@@ -107,27 +110,17 @@ class _DashboardPageState extends State<DashboardPage> {
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = 1),
       child: Container(
-        width: 60,
-        height: 60,
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        width: 56,
+        height: 56,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.primary, AppColors.primaryLight],
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: AppColors.pop,
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Icon(
-          isSelected ? Icons.mic : Icons.mic_none,
-          color: Colors.white,
-          size: 28,
+          isSelected ? Icons.graphic_eq_rounded : Icons.mic_none_rounded,
+          color: AppColors.ink,
+          size: 26,
         ),
       ),
     );

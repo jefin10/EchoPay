@@ -1,4 +1,3 @@
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:local_auth/local_auth.dart';
@@ -6,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/intent_service.dart';
 import '../services/django_service.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_typography.dart';
 
 class SpeechScreen extends StatefulWidget {
   const SpeechScreen({super.key});
@@ -37,7 +37,7 @@ class _SpeechScreenState extends State<SpeechScreen>
     _loadUserPhone();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
   }
 
@@ -67,9 +67,7 @@ class _SpeechScreenState extends State<SpeechScreen>
     try {
       final bool canUseBiometrics = await _localAuth.canCheckBiometrics;
       final bool isDeviceSupported = await _localAuth.isDeviceSupported();
-
       if (!canUseBiometrics || !isDeviceSupported) return true;
-
       return await _localAuth.authenticate(
         localizedReason: reason,
         options: const AuthenticationOptions(
@@ -99,7 +97,6 @@ class _SpeechScreenState extends State<SpeechScreen>
 
   void _onSpeechResult(result) async {
     setState(() => _spokenText = result.recognizedWords);
-
     if (result.finalResult && _spokenText.isNotEmpty && _serverConnected) {
       await _processVoiceCommand(_spokenText);
     }
@@ -110,13 +107,10 @@ class _SpeechScreenState extends State<SpeechScreen>
       _isProcessing = true;
       _responseMessage = null;
     });
-
     try {
       final result = await IntentService.processVoiceCommand(text);
-
       if (result['status'] == 'success') {
         final action = result['action'];
-
         if (action == 'initiate_transfer') {
           setState(() => _isProcessing = false);
           _showTransferConfirmation(result['data']);
@@ -158,7 +152,6 @@ class _SpeechScreenState extends State<SpeechScreen>
     final authenticated = await _authenticateWithBiometrics(
       'Authenticate to view your balance',
     );
-
     if (!authenticated) {
       setState(() {
         _isProcessing = false;
@@ -167,13 +160,10 @@ class _SpeechScreenState extends State<SpeechScreen>
       });
       return;
     }
-
     final userPhone =
         _userPhone ?? await IntentService.getUserPhone() ?? '+919999999999';
     final result = await DjangoService.getBalance(userPhone);
-
     setState(() => _isProcessing = false);
-
     if (result['status'] == 'success') {
       _showBalanceDialog(result['balance']);
     } else {
@@ -187,25 +177,20 @@ class _SpeechScreenState extends State<SpeechScreen>
   Future<void> _executeMoneyTransfer(Map<String, dynamic> data) async {
     final amount = data['amount'];
     final recipient = data['recipient'];
-
     final authenticated = await _authenticateWithBiometrics(
       'Authenticate to send ₹$amount',
     );
-
     if (!authenticated) {
       _showSnackBar('Authentication cancelled', false);
       return;
     }
-
     setState(() {
       _isProcessing = true;
       _responseMessage = 'Processing transfer...';
     });
-
     final senderPhone =
         _userPhone ?? await IntentService.getUserPhone() ?? '+919999999999';
     Map<String, dynamic> result;
-
     if (recipient != null && recipient.contains('@')) {
       result = await DjangoService.sendMoneyByUpiId(
         senderPhone: senderPhone,
@@ -230,11 +215,9 @@ class _SpeechScreenState extends State<SpeechScreen>
       });
       return;
     }
-
     setState(() => _isProcessing = false);
-
     if (result['status'] == 'success') {
-      _showSuccessDialog('Payment Successful!', '₹$amount sent to $recipient');
+      _showSuccessDialog('Payment sent', '₹$amount to $recipient');
     } else {
       _showSnackBar(result['message'] ?? 'Transfer failed', false);
     }
@@ -243,36 +226,29 @@ class _SpeechScreenState extends State<SpeechScreen>
   Future<void> _executeMoneyRequest(Map<String, dynamic> data) async {
     final amount = data['amount'];
     final recipient = data['recipient'];
-
     final authenticated = await _authenticateWithBiometrics(
       'Authenticate to request ₹${amount ?? "money"}',
     );
-
     if (!authenticated) {
       _showSnackBar('Authentication cancelled', false);
       return;
     }
-
     setState(() {
       _isProcessing = true;
       _responseMessage = 'Sending request...';
     });
-
     final requesterPhone =
         _userPhone ?? await IntentService.getUserPhone() ?? '+919999999999';
     String requesteePhone = recipient?.toString().replaceAll(' ', '') ?? '';
     if (requesteePhone.isNotEmpty && !requesteePhone.startsWith('+91')) {
       requesteePhone = '+91${requesteePhone.replaceAll('+', '')}';
     }
-
     final result = await DjangoService.createMoneyRequest(
       requesterPhone: requesterPhone,
       requesteePhone: requesteePhone,
       amount: (amount is int) ? amount.toDouble() : (amount ?? 0.0),
     );
-
     setState(() => _isProcessing = false);
-
     if (result['status'] == 'success') {
       _showSnackBar('Request sent for ₹$amount', true);
     } else {
@@ -289,50 +265,39 @@ class _SpeechScreenState extends State<SpeechScreen>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
+              width: 36,
               height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: AppColors.borderStrong,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.send_rounded,
-                color: AppColors.primary,
-                size: 32,
-              ),
-            ),
-            const SizedBox(height: 16),
+            Text('voice pay', style: AppTypography.eyebrow()),
+            const SizedBox(height: 10),
             Text(
               '₹$amount',
-              style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTypography.amount(size: 42),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               'to $recipient',
-              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             Row(
               children: [
                 Expanded(
@@ -340,15 +305,21 @@ class _SpeechScreenState extends State<SpeechScreen>
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: BorderSide(color: AppColors.border),
+                      side: const BorderSide(color: AppColors.borderStrong),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text('Cancel'),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
@@ -356,19 +327,21 @@ class _SpeechScreenState extends State<SpeechScreen>
                       _executeMoneyTransfer(data);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.success,
+                      backgroundColor: AppColors.ink,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text('Confirm'),
+                    child: const Text(
+                      'Confirm',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -384,50 +357,39 @@ class _SpeechScreenState extends State<SpeechScreen>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
+              width: 36,
               height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: AppColors.borderStrong,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.request_page_rounded,
-                color: AppColors.warning,
-                size: 32,
-              ),
-            ),
-            const SizedBox(height: 16),
+            Text('request money', style: AppTypography.eyebrow()),
+            const SizedBox(height: 10),
             Text(
-              'Request ₹${amount ?? "money"}',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+              '₹${amount ?? '?'}',
+              style: AppTypography.amount(size: 42),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               'from $recipient',
-              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             Row(
               children: [
                 Expanded(
@@ -435,15 +397,21 @@ class _SpeechScreenState extends State<SpeechScreen>
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: BorderSide(color: AppColors.border),
+                      side: const BorderSide(color: AppColors.borderStrong),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text('Cancel'),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
@@ -451,19 +419,21 @@ class _SpeechScreenState extends State<SpeechScreen>
                       _executeMoneyRequest(data);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.warning,
+                      backgroundColor: AppColors.ink,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text('Send Request'),
+                    child: const Text(
+                      'Send Request',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -474,37 +444,32 @@ class _SpeechScreenState extends State<SpeechScreen>
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
-                  color: AppColors.info.withOpacity(0.1),
-                  shape: BoxShape.circle,
+                  color: AppColors.surfaceDim,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
-                  Icons.account_balance_wallet,
-                  color: AppColors.info,
-                  size: 40,
+                  Icons.account_balance_wallet_outlined,
+                  color: AppColors.ink,
+                  size: 26,
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Your Balance',
-                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
-              ),
+              const SizedBox(height: 18),
+              Text('wallet balance', style: AppTypography.eyebrow()),
               const SizedBox(height: 8),
               Text(
                 '₹$balance',
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
+                style: AppTypography.amount(size: 40),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -512,14 +477,17 @@ class _SpeechScreenState extends State<SpeechScreen>
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: AppColors.ink,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text('Done'),
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
@@ -533,38 +501,37 @@ class _SpeechScreenState extends State<SpeechScreen>
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.1),
-                  shape: BoxShape.circle,
+                  color: AppColors.mint.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
-                  Icons.check_circle,
-                  color: AppColors.success,
-                  size: 48,
+                  Icons.check_rounded,
+                  color: AppColors.mint,
+                  size: 28,
                 ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
+              Text(title, style: AppTypography.heading(size: 20)),
+              const SizedBox(height: 4),
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -572,14 +539,17 @@ class _SpeechScreenState extends State<SpeechScreen>
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.success,
+                    backgroundColor: AppColors.ink,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text('Done'),
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
@@ -593,9 +563,9 @@ class _SpeechScreenState extends State<SpeechScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isSuccess ? AppColors.success : AppColors.error,
+        backgroundColor: isSuccess ? AppColors.mint : AppColors.coral,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
       ),
     );
@@ -612,344 +582,326 @@ class _SpeechScreenState extends State<SpeechScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceLight,
-      body: Column(
-        children: [
-          // Header
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.primary, AppColors.primaryDark],
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _topBar(),
+            Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 12,
-                ),
-                child: Row(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Voice Assistant',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: _serverConnected
-                                  ? AppColors.success
-                                  : AppColors.error,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _serverConnected ? 'Online' : 'Offline',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    const Spacer(),
+                    if (_spokenText.isNotEmpty || _isListening) _speechCard(),
+                    if (_isProcessing)
+                      _processingCard()
+                    else if (_responseMessage != null)
+                      _responseCard(),
+                    const Spacer(),
+                    if (!_isListening && _spokenText.isEmpty && !_isProcessing)
+                      _idleHint(),
+                    const SizedBox(height: 110),
                   ],
                 ),
               ),
             ),
-          ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: _micButton(),
+    );
+  }
 
-          // Main content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  const Spacer(),
-
-                  // Speech display area
-                  if (_spokenText.isNotEmpty || _isListening)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      margin: const EdgeInsets.only(bottom: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          if (_isListening)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(
-                                color: AppColors.error.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  AnimatedBuilder(
-                                    animation: _pulseController,
-                                    builder: (context, child) => Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.error.withOpacity(
-                                          0.5 + _pulseController.value * 0.5,
-                                        ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Listening...',
-                                    style: TextStyle(
-                                      color: AppColors.error,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          Text(
-                            _spokenText.isEmpty
-                                ? 'Say something...'
-                                : '"$_spokenText"',
-                            style: TextStyle(
-                              fontSize: _spokenText.isEmpty ? 16 : 20,
-                              fontWeight: _spokenText.isEmpty
-                                  ? FontWeight.normal
-                                  : FontWeight.w500,
-                              color: _spokenText.isEmpty
-                                  ? AppColors.textSecondary
-                                  : AppColors.textPrimary,
-                              fontStyle: _spokenText.isEmpty
-                                  ? FontStyle.italic
-                                  : FontStyle.normal,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  // Response area
-                  if (_isProcessing)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      margin: const EdgeInsets.only(bottom: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Text(
-                            _responseMessage ?? 'Processing...',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else if (_responseMessage != null)
-                    GestureDetector(
-                      onTap: _clearResponse,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        margin: const EdgeInsets.only(bottom: 20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: _isSuccess
-                                ? AppColors.success.withOpacity(0.3)
-                                : AppColors.error.withOpacity(0.3),
-                            width: 1.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 20,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color:
-                                    (_isSuccess
-                                            ? AppColors.success
-                                            : AppColors.error)
-                                        .withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                _isSuccess
-                                    ? Icons.assistant
-                                    : Icons.error_outline,
-                                color: _isSuccess
-                                    ? AppColors.success
-                                    : AppColors.error,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                _responseMessage!,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: AppColors.textPrimary,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                  const Spacer(),
-
-                  // Hint text
-                  if (!_isListening && _spokenText.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.mic_none_rounded,
-                            size: 64,
-                            color: AppColors.textSecondary.withOpacity(0.3),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Tap the mic to start',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Try "Send ₹500 to 9876543210"',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary.withOpacity(0.7),
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  const SizedBox(height: 100),
-                ],
+  Widget _topBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
               ),
+              child: const Icon(Icons.arrow_back_rounded,
+                  color: AppColors.ink, size: 20),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text('voice pay', style: AppTypography.heading(size: 18)),
+          const Spacer(),
+          _statusChip(),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              color: _serverConnected ? AppColors.mint : AppColors.coral,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            _serverConnected ? 'online' : 'offline',
+            style: AppTypography.eyebrow(
+              color: _serverConnected ? AppColors.mint : AppColors.coral,
+              size: 10,
             ),
           ),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: AvatarGlow(
-        animate: _isListening,
-        glowColor: _isListening ? AppColors.error : AppColors.primary,
-        duration: const Duration(milliseconds: 1500),
-        child: GestureDetector(
-          onTap: _speechEnabled
-              ? (_isListening ? _stopListening : _startListening)
-              : null,
-          child: Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: _isListening
-                    ? [AppColors.error, AppColors.error.withRed(200)]
-                    : [AppColors.primary, AppColors.primaryDark],
+    );
+  }
+
+  Widget _speechCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          if (_isListening)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                color: AppColors.pop.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
               ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: (_isListening ? AppColors.error : AppColors.primary)
-                      .withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedBuilder(
+                    animation: _pulseController,
+                    builder: (context, child) => Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: AppColors.pop.withOpacity(
+                          0.5 + _pulseController.value * 0.5,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'listening',
+                    style: AppTypography.eyebrow(
+                      color: AppColors.ink,
+                      size: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Text(
+            _spokenText.isEmpty ? 'say something...' : '"$_spokenText"',
+            style: _spokenText.isEmpty
+                ? TextStyle(
+                    fontSize: 15,
+                    color: AppColors.textMuted,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w500,
+                  )
+                : AppTypography.heading(size: 18),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _processingCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              color: AppColors.ink,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Text(
+            _responseMessage ?? 'processing...',
+            style: TextStyle(
+              fontSize: 15,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _responseCard() {
+    return GestureDetector(
+      onTap: _clearResponse,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _isSuccess
+                ? AppColors.mint.withOpacity(0.4)
+                : AppColors.coral.withOpacity(0.4),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: _isSuccess
+                    ? AppColors.mint.withOpacity(0.1)
+                    : AppColors.coral.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _isSuccess ? Icons.assistant_rounded : Icons.error_outline_rounded,
+                color: _isSuccess ? AppColors.mint : AppColors.coral,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                _responseMessage!,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.ink,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
                 ),
-              ],
+              ),
             ),
-            child: Icon(
-              _isListening ? Icons.stop_rounded : Icons.mic_rounded,
-              color: Colors.white,
-              size: 32,
-            ),
+            const Icon(Icons.close_rounded,
+                color: AppColors.textMuted, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _idleHint() {
+    return Column(
+      children: [
+        Text('voice pay', style: AppTypography.eyebrow()),
+        const SizedBox(height: 10),
+        Text(
+          'Just say what\nyou want to do.',
+          textAlign: TextAlign.center,
+          style: AppTypography.heading(size: 26, weight: FontWeight.w800)
+              .copyWith(height: 1.1),
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _sampleChip('Send ₹500 to 98765'),
+            _sampleChip('What\'s my balance?'),
+            _sampleChip('Request ₹200 from John'),
+          ],
+        ),
+        const SizedBox(height: 28),
+      ],
+    );
+  }
+
+  Widget _sampleChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.ink,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _micButton() {
+    return GestureDetector(
+      onTap: _speechEnabled
+          ? (_isListening ? _stopListening : _startListening)
+          : null,
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          final scale = _isListening
+              ? 1.0 + _pulseController.value * 0.06
+              : 1.0;
+          return Transform.scale(
+            scale: scale,
+            child: child,
+          );
+        },
+        child: Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            color: _isListening ? AppColors.coral : AppColors.ink,
+            borderRadius: BorderRadius.circular(22),
+            border: _isListening
+                ? Border.all(color: AppColors.coral.withOpacity(0.3), width: 3)
+                : null,
+          ),
+          child: Icon(
+            _isListening ? Icons.stop_rounded : Icons.mic_rounded,
+            color: _isListening ? Colors.white : AppColors.pop,
+            size: 30,
           ),
         ),
       ),

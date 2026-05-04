@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_typography.dart';
 
 class MyQRPage extends StatefulWidget {
   const MyQRPage({super.key});
@@ -16,7 +17,6 @@ class MyQRPage extends StatefulWidget {
 class _MyQRPageState extends State<MyQRPage> {
   String? _userUpiId;
   String? _userName;
-  String? _phoneNumber;
   bool _isLoading = true;
   String? _error;
 
@@ -30,11 +30,7 @@ class _MyQRPageState extends State<MyQRPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final phoneNumber = prefs.getString('phoneNumber');
-      
       if (phoneNumber != null) {
-        setState(() {
-          _phoneNumber = phoneNumber;
-        });
         await _fetchUserProfile(phoneNumber);
       } else {
         setState(() {
@@ -54,7 +50,6 @@ class _MyQRPageState extends State<MyQRPage> {
     try {
       final url = Uri.parse('$GET_PROFILE_URL?phoneNumber=$phoneNumber');
       final response = await http.get(url);
-      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -85,54 +80,50 @@ class _MyQRPageState extends State<MyQRPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceLight,
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'My QR Code',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share, color: Colors.white),
-            onPressed: _shareQR,
-          ),
-        ],
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.ink,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : _error != null
+                ? _buildErrorState()
+                : _buildBody(),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : _error != null
-              ? _buildErrorState()
-              : _buildQRContent(),
     );
   }
 
   Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(50),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.border),
               ),
-              child: const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+              child: const Icon(Icons.error_outline_rounded,
+                  color: AppColors.coral, size: 28),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             Text(
               _error!,
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
               textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.ink,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -141,12 +132,6 @@ class _MyQRPageState extends State<MyQRPage> {
                 });
                 _loadUserData();
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
               child: const Text('Retry'),
             ),
           ],
@@ -155,218 +140,227 @@ class _MyQRPageState extends State<MyQRPage> {
     );
   }
 
-  Widget _buildQRContent() {
+  Widget _buildBody() {
     return SingleChildScrollView(
-      child: Column(
-        children: [
-          _buildUserInfoCard(),
-          Transform.translate(
-            offset: const Offset(0, -40),
-            child: _buildQRCodeContainer(),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                _buildInstructions(),
-                const SizedBox(height: 20),
-                _buildActionButtons(),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUserInfoCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 60),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppColors.primary, AppColors.primaryDark],
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(36),
-            ),
-            child: Center(
-              child: Text(
-                (_userName ?? 'U')[0].toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            _userName ?? 'User',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _userUpiId ?? '',
-            style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQRCodeContainer() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          QrImageView(
-            data: _generateQRData(),
-            version: QrVersions.auto,
-            size: 220.0,
-            backgroundColor: Colors.white,
-            foregroundColor: AppColors.textPrimary,
-            errorCorrectionLevel: QrErrorCorrectLevel.M,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Scan to Pay Me',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Show this QR to receive payments',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInstructions() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'How it works',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildInstructionStep('1', 'Show this QR to anyone who wants to pay you'),
-          const SizedBox(height: 12),
-          _buildInstructionStep('2', 'They scan it with any UPI app'),
-          const SizedBox(height: 12),
-          _buildInstructionStep('3', 'Money is received instantly'),
+          _topBar(),
+          const SizedBox(height: 28),
+          _qrCard(),
+          const SizedBox(height: 22),
+          _howItWorks(),
+          const SizedBox(height: 22),
+          _actionButtons(),
         ],
       ),
     );
   }
 
-  Widget _buildInstructionStep(String number, String text) {
+  Widget _topBar() {
     return Row(
       children: [
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Text(
-              number,
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
             ),
+            child: const Icon(Icons.arrow_back_rounded,
+                color: AppColors.ink, size: 20),
           ),
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: Text(text, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+        Text('my qr', style: AppTypography.heading(size: 22)),
+        const Spacer(),
+        GestureDetector(
+          onTap: _shareQR,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Icon(Icons.share_outlined,
+                color: AppColors.ink, size: 18),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _qrCard() {
+    final initial = _userName?.isNotEmpty == true
+        ? _userName![0].toUpperCase()
+        : 'U';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
+      decoration: BoxDecoration(
+        color: AppColors.ink,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.pop,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  initial,
+                  style: const TextStyle(
+                    color: AppColors.ink,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _userName ?? 'User',
+                      style: AppTypography.heading(
+                        size: 17,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      _userUpiId ?? '',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: QrImageView(
+              data: _generateQRData(),
+              version: QrVersions.auto,
+              size: 220,
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.ink,
+              errorCorrectionLevel: QrErrorCorrectLevel.M,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'scan to pay me',
+            style: AppTypography.eyebrow(
+              color: AppColors.pop,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _howItWorks() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('how it works', style: AppTypography.eyebrow()),
+          const SizedBox(height: 14),
+          _step('1', 'Show this QR to anyone who wants to pay you'),
+          _step('2', 'They scan it with any UPI app'),
+          _step('3', 'Money is received instantly'),
+        ],
+      ),
+    );
+  }
+
+  Widget _step(String number, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: AppColors.ink,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: AppColors.pop,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: AppColors.ink,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionButtons() {
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: _shareQR,
-            icon: const Icon(Icons.share_rounded, size: 20),
-            label: const Text('Share QR Code'),
+            icon: const Icon(Icons.share_rounded, size: 18),
+            label: const Text('Share QR'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: AppColors.ink,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
           ),
         ),
@@ -375,14 +369,8 @@ class _MyQRPageState extends State<MyQRPage> {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: _saveQR,
-            icon: const Icon(Icons.download_rounded, size: 20),
-            label: const Text('Save to Gallery'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              side: const BorderSide(color: AppColors.primary),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
+            icon: const Icon(Icons.download_rounded, size: 18),
+            label: const Text('Save to gallery'),
           ),
         ),
       ],
@@ -391,23 +379,13 @@ class _MyQRPageState extends State<MyQRPage> {
 
   void _shareQR() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Share feature coming soon'),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+      const SnackBar(content: Text('Share feature coming soon')),
     );
   }
 
   void _saveQR() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Save feature coming soon'),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+      const SnackBar(content: Text('Save feature coming soon')),
     );
   }
 }

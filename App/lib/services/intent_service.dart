@@ -130,7 +130,7 @@ class IntentService {
   static Future<Map<String, dynamic>?> predictIntent(String text) async {
     try {
       // Get user phone number
-      final userPhone = await getUserPhone() ?? '+919999999999';
+      final userPhone = await getUserPhone() ?? '';
 
       final response = await http.post(
         Uri.parse(CLASSIFY_INTENT_URL),

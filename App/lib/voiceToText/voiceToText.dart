@@ -160,8 +160,15 @@ class _SpeechScreenState extends State<SpeechScreen>
       });
       return;
     }
-    final userPhone =
-        _userPhone ?? await IntentService.getUserPhone() ?? '+919999999999';
+    final userPhone = _userPhone ?? await IntentService.getUserPhone();
+    if (userPhone == null || userPhone.isEmpty) {
+      setState(() {
+        _isProcessing = false;
+        _responseMessage = 'Session expired. Please log in again.';
+        _isSuccess = false;
+      });
+      return;
+    }
     final result = await DjangoService.getBalance(userPhone);
     setState(() => _isProcessing = false);
     if (result['status'] == 'success') {
@@ -188,8 +195,15 @@ class _SpeechScreenState extends State<SpeechScreen>
       _isProcessing = true;
       _responseMessage = 'Processing transfer...';
     });
-    final senderPhone =
-        _userPhone ?? await IntentService.getUserPhone() ?? '+919999999999';
+    final senderPhone = _userPhone ?? await IntentService.getUserPhone();
+    if (senderPhone == null || senderPhone.isEmpty) {
+      setState(() {
+        _isProcessing = false;
+        _responseMessage = 'Session expired. Please log in again.';
+        _isSuccess = false;
+      });
+      return;
+    }
     Map<String, dynamic> result;
     if (recipient != null && recipient.contains('@')) {
       result = await DjangoService.sendMoneyByUpiId(
@@ -237,8 +251,15 @@ class _SpeechScreenState extends State<SpeechScreen>
       _isProcessing = true;
       _responseMessage = 'Sending request...';
     });
-    final requesterPhone =
-        _userPhone ?? await IntentService.getUserPhone() ?? '+919999999999';
+    final requesterPhone = _userPhone ?? await IntentService.getUserPhone();
+    if (requesterPhone == null || requesterPhone.isEmpty) {
+      setState(() {
+        _isProcessing = false;
+        _responseMessage = 'Session expired. Please log in again.';
+        _isSuccess = false;
+      });
+      return;
+    }
     String requesteePhone = recipient?.toString().replaceAll(' ', '') ?? '';
     if (requesteePhone.isNotEmpty && !requesteePhone.startsWith('+91')) {
       requesteePhone = '+91${requesteePhone.replaceAll('+', '')}';

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
 import '../voiceToText/voiceToText.dart';
@@ -20,19 +23,81 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _userName = 'User';
+  String _userName = '';
+  List<Map<String, dynamic>> _recentTransactions = [];
+  bool _loadingTransactions = true;
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
+    _loadRecentTransactions();
   }
 
   Future<void> _loadUserName() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userName = prefs.getString('userName') ?? 'User';
-    });
+    final name = prefs.getString('userName') ?? prefs.getString('upiName');
+    if (name != null && name.isNotEmpty) {
+      setState(() => _userName = name);
+      return;
+    }
+    // Fallback: fetch from profile API
+    final phone = prefs.getString('phoneNumber');
+    if (phone == null) return;
+    try {
+      final res =
+          await http.get(Uri.parse('$GET_PROFILE_URL?phoneNumber=$phone'));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        final fetchedName = data['upiName'] as String?;
+        if (fetchedName != null && mounted) {
+          setState(() => _userName = fetchedName);
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _loadRecentTransactions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final phone = prefs.getString('phoneNumber');
+    if (phone == null) {
+      setState(() => _loadingTransactions = false);
+      return;
+    }
+    try {
+      final res = await http.post(
+        Uri.parse(GET_TRANSACTIONS_URL),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phoneNumber': phone}),
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        final txData = data['transactions'] as Map<String, dynamic>?;
+        if (txData != null) {
+          final sent = (txData['sent'] as List? ?? []).map((t) => {
+                'type': 'sent',
+                'name': t['receiver__user__upiName'] ?? 'Unknown',
+                'amount': t['amount']?.toString() ?? '0',
+                'timestamp': t['timestamp']?.toString() ?? '',
+                'status': t['status'] ?? 'completed',
+              });
+          final received = (txData['received'] as List? ?? []).map((t) => {
+                'type': 'received',
+                'name': t['sender__user__upiName'] ?? 'Unknown',
+                'amount': t['amount']?.toString() ?? '0',
+                'timestamp': t['timestamp']?.toString() ?? '',
+                'status': t['status'] ?? 'completed',
+              });
+          final all = [...sent, ...received];
+          all.sort((a, b) =>
+              (b['timestamp'] as String).compareTo(a['timestamp'] as String));
+          if (mounted) {
+            setState(() => _recentTransactions = all.take(3).toList());
+          }
+        }
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _loadingTransactions = false);
   }
 
   @override
@@ -97,13 +162,11 @@ class _HomePageState extends State<HomePage> {
               Text(
                 'hey there',
                 style: AppTypography.eyebrow(
-                  color: AppColors.textSecondary,
-                  size: 10,
-                ),
+                    color: AppColors.textSecondary, size: 10),
               ),
               const SizedBox(height: 2),
               Text(
-                _userName,
+                _userName.isEmpty ? 'Welcome' : _userName,
                 style: AppTypography.heading(size: 18),
               ),
             ],
@@ -160,12 +223,11 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   'wallet balance',
                   style: AppTypography.eyebrow(
-                    color: Colors.white.withOpacity(0.6),
-                  ),
+                      color: Colors.white.withOpacity(0.6)),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: AppColors.pop,
                     borderRadius: BorderRadius.circular(20),
@@ -173,9 +235,7 @@ class _HomePageState extends State<HomePage> {
                   child: Text(
                     'LIVE',
                     style: AppTypography.eyebrow(
-                      color: AppColors.ink,
-                      size: 10,
-                    ),
+                        color: AppColors.ink, size: 10),
                   ),
                 ),
               ],
@@ -195,10 +255,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(width: 4),
                 Text(
                   'Tap to view',
-                  style: AppTypography.amount(
-                    size: 30,
-                    color: Colors.white,
-                  ),
+                  style: AppTypography.amount(size: 30, color: Colors.white),
                 ),
               ],
             ),
@@ -215,11 +272,8 @@ class _HomePageState extends State<HomePage> {
                     letterSpacing: 1.4,
                   ),
                 ),
-                Icon(
-                  Icons.arrow_outward_rounded,
-                  color: AppColors.pop,
-                  size: 22,
-                ),
+                const Icon(Icons.arrow_outward_rounded,
+                    color: AppColors.pop, size: 22),
               ],
             ),
           ],
@@ -229,10 +283,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSectionLabel(String text) {
-    return Text(
-      text,
-      style: AppTypography.eyebrow(color: AppColors.textSecondary),
-    );
+    return Text(text,
+        style: AppTypography.eyebrow(color: AppColors.textSecondary));
   }
 
   Widget _buildQuickActions() {
@@ -295,10 +347,9 @@ class _HomePageState extends State<HomePage> {
               Text(
                 label,
                 style: const TextStyle(
-                  color: AppColors.ink,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
+                    color: AppColors.ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -318,7 +369,8 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(
           color: AppColors.popSoft,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.pop.withOpacity(0.55), width: 1.5),
+          border:
+              Border.all(color: AppColors.pop.withOpacity(0.55), width: 1.5),
         ),
         child: Row(
           children: [
@@ -337,23 +389,18 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'voice pay',
-                    style: AppTypography.eyebrow(color: AppColors.ink),
-                  ),
+                  Text('voice pay',
+                      style: AppTypography.eyebrow(color: AppColors.ink)),
                   const SizedBox(height: 4),
-                  Text(
-                    'Send ₹500 to John',
-                    style: AppTypography.heading(size: 17),
-                  ),
+                  Text('Send ₹500 to John',
+                      style: AppTypography.heading(size: 17)),
                   const SizedBox(height: 2),
                   Text(
                     'Just say it. We will do the rest.',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -390,7 +437,8 @@ class _HomePageState extends State<HomePage> {
                 'Any UPI handle',
                 () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const PayToUpiIdPage()),
+                  MaterialPageRoute(
+                      builder: (_) => const PayToUpiIdPage()),
                 ),
               ),
             ),
@@ -406,7 +454,8 @@ class _HomePageState extends State<HomePage> {
                 'Ask anyone to pay you',
                 () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const RequestMoneyPage()),
+                  MaterialPageRoute(
+                      builder: (_) => const RequestMoneyPage()),
                 ),
               ),
             ),
@@ -429,11 +478,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _transferCard(
-    IconData icon,
-    String title,
-    String subtitle,
-    VoidCallback onTap,
-  ) {
+      IconData icon, String title, String subtitle, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -456,18 +501,14 @@ class _HomePageState extends State<HomePage> {
               child: Icon(icon, color: AppColors.ink, size: 20),
             ),
             const SizedBox(height: 14),
-            Text(
-              title,
-              style: AppTypography.heading(size: 15),
-            ),
+            Text(title, style: AppTypography.heading(size: 15)),
             const SizedBox(height: 2),
             Text(
               subtitle,
               style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -508,27 +549,87 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 6),
-          _activityRow('Payment sent', 'To John Doe', '-₹500.00', false),
-          _divider(),
-          _activityRow('Money received', 'From Alice', '+₹1,200.00', true),
-          _divider(),
-          _activityRow('Payment sent', 'To Store XYZ', '-₹350.00', false),
+          if (_loadingTransactions)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: CircularProgressIndicator(
+                    color: AppColors.ink, strokeWidth: 2),
+              ),
+            )
+          else if (_recentTransactions.isEmpty)
+            _emptyTransactions()
+          else
+            ..._buildTransactionRows(),
         ],
       ),
     );
   }
 
-  Widget _divider() => Container(
-        height: 1,
-        color: AppColors.divider,
-      );
+  Widget _emptyTransactions() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 22),
+      child: Column(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceDim,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.receipt_long_rounded,
+                color: AppColors.textSecondary, size: 22),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'No transactions yet',
+            style: TextStyle(
+                color: AppColors.ink,
+                fontSize: 14,
+                fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Send your first payment to get started.',
+            style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildTransactionRows() {
+    final rows = <Widget>[];
+    for (int i = 0; i < _recentTransactions.length; i++) {
+      final t = _recentTransactions[i];
+      final isSent = t['type'] == 'sent';
+      final name = t['name'] as String;
+      final amount = double.tryParse(t['amount'] as String) ?? 0;
+      final displayAmt =
+          '${isSent ? '-' : '+'}₹${amount.toStringAsFixed(2)}';
+      if (i > 0) _buildDivider();
+      rows.add(_activityRow(
+        isSent ? 'Sent' : 'Received',
+        isSent ? 'To $name' : 'From $name',
+        displayAmt,
+        !isSent,
+      ));
+      if (i < _recentTransactions.length - 1) {
+        rows.add(_buildDivider());
+      }
+    }
+    return rows;
+  }
+
+  Widget _buildDivider() => Container(height: 1, color: AppColors.divider);
 
   Widget _activityRow(
-    String title,
-    String subtitle,
-    String amount,
-    bool isCredit,
-  ) {
+      String title, String subtitle, String amount, bool isCredit) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
@@ -556,19 +657,17 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: AppColors.ink,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                      color: AppColors.ink,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),

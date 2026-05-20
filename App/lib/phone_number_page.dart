@@ -8,6 +8,8 @@ import 'constants/app_colors.dart';
 import 'constants/app_typography.dart';
 import 'verify_otp_page.dart';
 import 'widgets/app_logo.dart';
+import 'widgets/app_button.dart';
+import 'widgets/motion.dart';
 
 class PhoneNumberPage extends StatefulWidget {
   const PhoneNumberPage({super.key});
@@ -89,7 +91,8 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
             key: _formKey,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-              child: Column(
+              child: Entrance(
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Top brand row — small, deliberate
@@ -138,43 +141,25 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
 
                   _buildPhoneRow(),
 
-                  if (_error != null) ...[
-                    const SizedBox(height: 14),
-                    _buildErrorChip(_error!),
-                  ],
+                  AnimatedSize(
+                    duration: AppMotion.medium,
+                    curve: AppMotion.out,
+                    alignment: Alignment.topCenter,
+                    child: _error == null
+                        ? const SizedBox(width: double.infinity)
+                        : Padding(
+                            padding: const EdgeInsets.only(top: 14),
+                            child: Entrance(child: _buildErrorChip(_error!)),
+                          ),
+                  ),
 
                   const Spacer(),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _sendOtp,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.ink,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Text('Send code'),
-                                SizedBox(width: 10),
-                                Icon(Icons.arrow_forward_rounded, size: 20),
-                              ],
-                            ),
-                    ),
+                  AppButton(
+                    label: 'Send code',
+                    icon: Icons.arrow_forward_rounded,
+                    loading: _isLoading,
+                    onPressed: _isLoading ? null : _sendOtp,
                   ),
                   const SizedBox(height: 12),
                   Center(
@@ -187,6 +172,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                     ),
                   ),
                 ],
+                ),
               ),
             ),
           ),
@@ -285,9 +271,9 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.coral.withOpacity(0.08),
+        color: AppColors.coral.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.coral.withOpacity(0.3)),
+        border: Border.all(color: AppColors.coral.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../widgets/motion.dart';
 import 'home_page.dart';
 import 'voice_assistant_page.dart';
 import 'profile_page.dart';
@@ -24,7 +25,18 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceLight,
-      body: _pages[_currentIndex],
+      // Tabs are switched many times a day — keep this minimal: a fast
+      // fade so the swap isn't jarring, no slide/scale theatrics.
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 160),
+        switchInCurve: AppMotion.out,
+        transitionBuilder: (child, anim) =>
+            FadeTransition(opacity: anim, child: child),
+        child: KeyedSubtree(
+          key: ValueKey(_currentIndex),
+          child: _pages[_currentIndex],
+        ),
+      ),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
@@ -74,8 +86,8 @@ class _DashboardPageState extends State<DashboardPage> {
     required int index,
   }) {
     final isSelected = _currentIndex == index;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return Pressable(
+      scale: 0.9,
       onTap: () => setState(() => _currentIndex = index),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -84,7 +96,7 @@ class _DashboardPageState extends State<DashboardPage> {
           children: [
             Icon(
               isSelected ? activeIcon : icon,
-              color: isSelected ? AppColors.pop : Colors.white.withOpacity(0.55),
+              color: isSelected ? AppColors.pop : Colors.white.withValues(alpha: 0.55),
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -93,7 +105,7 @@ class _DashboardPageState extends State<DashboardPage> {
               style: TextStyle(
                 color: isSelected
                     ? AppColors.pop
-                    : Colors.white.withOpacity(0.55),
+                    : Colors.white.withValues(alpha: 0.55),
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 letterSpacing: 0.2,
@@ -107,7 +119,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildVoiceNavItem() {
     final isSelected = _currentIndex == 1;
-    return GestureDetector(
+    return Pressable(
+      scale: 0.92,
       onTap: () => setState(() => _currentIndex = 1),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

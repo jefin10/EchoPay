@@ -7,6 +7,8 @@ import 'dart:async';
 import 'constants/api_constants.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_typography.dart';
+import 'widgets/app_button.dart';
+import 'widgets/motion.dart';
 
 class VerifyOtpPage extends StatefulWidget {
   final String phoneNumber;
@@ -161,7 +163,8 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-            child: Column(
+            child: Entrance(
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildBackButton(),
@@ -204,48 +207,31 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
 
                 _buildOtpRow(),
 
-                if (_error != null) ...[
-                  const SizedBox(height: 14),
-                  _buildErrorChip(_error!),
-                ],
+                AnimatedSize(
+                  duration: AppMotion.medium,
+                  curve: AppMotion.out,
+                  alignment: Alignment.topCenter,
+                  child: _error == null
+                      ? const SizedBox(width: double.infinity)
+                      : Padding(
+                          padding: const EdgeInsets.only(top: 14),
+                          child: Entrance(child: _buildErrorChip(_error!)),
+                        ),
+                ),
 
                 const SizedBox(height: 24),
                 _buildResendRow(),
 
                 const Spacer(),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isVerifying ? null : _verifyOtp,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.ink,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: _isVerifying
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text('Verify & continue'),
-                              SizedBox(width: 10),
-                              Icon(Icons.arrow_forward_rounded, size: 20),
-                            ],
-                          ),
-                  ),
+                AppButton(
+                  label: 'Verify & continue',
+                  icon: Icons.arrow_forward_rounded,
+                  loading: _isVerifying,
+                  onPressed: _isVerifying ? null : _verifyOtp,
                 ),
               ],
+              ),
             ),
           ),
         ),
@@ -254,7 +240,8 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
   }
 
   Widget _buildBackButton() {
-    return GestureDetector(
+    return Pressable(
+      scale: 0.9,
       onTap: () => Navigator.pop(context),
       child: Container(
         width: 44,
@@ -371,8 +358,9 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
             ),
           )
         else
-          GestureDetector(
-            onTap: _isSending ? null : _resendOtp,
+          Pressable(
+            scale: 0.92,
+            onTap: _isSending ? () {} : _resendOtp,
             child: Text(
               _isSending ? 'Sending' : 'Resend code',
               style: TextStyle(
@@ -391,9 +379,9 @@ class _VerifyOtpPageState extends State<VerifyOtpPage>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.coral.withOpacity(0.08),
+        color: AppColors.coral.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.coral.withOpacity(0.3)),
+        border: Border.all(color: AppColors.coral.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

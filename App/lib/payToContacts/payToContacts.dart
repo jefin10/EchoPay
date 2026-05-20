@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
+import '../widgets/app_button.dart';
 
 class PayToContactsPage extends StatefulWidget {
   const PayToContactsPage({super.key});
@@ -90,7 +92,8 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       child: Row(
         children: [
-          GestureDetector(
+          Pressable(
+            scale: 0.9,
             onTap: () => Navigator.pop(context),
             child: Container(
               width: 44,
@@ -163,10 +166,14 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
               ),
             ),
             if (_searchController.text.isNotEmpty)
-              GestureDetector(
+              Pressable(
+                scale: 0.85,
                 onTap: _searchController.clear,
-                child: const Icon(Icons.close_rounded,
-                    color: AppColors.textSecondary, size: 18),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.close_rounded,
+                      color: AppColors.textSecondary, size: 18),
+                ),
               ),
           ],
         ),
@@ -226,9 +233,10 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
               ),
             ),
             const SizedBox(height: 22),
-            ElevatedButton(
+            AppButton(
+              label: 'Open settings',
+              expand: false,
               onPressed: () => openAppSettings(),
-              child: const Text('Open settings'),
             ),
           ],
         ),
@@ -276,7 +284,8 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
         ? contact.phones.first.number
         : 'No phone number';
 
-    return GestureDetector(
+    return Pressable(
+      scale: 0.98,
       onTap: () => _handleContactTap(contact),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -418,7 +427,7 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppColors.coral.withOpacity(0.1),
+                  color: AppColors.coral.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(Icons.info_outline_rounded,
@@ -435,16 +444,9 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                 ),
               ),
               const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.ink,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('OK'),
-                ),
+              AppButton(
+                label: 'OK',
+                onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
@@ -538,7 +540,7 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 5),
                       decoration: BoxDecoration(
-                        color: AppColors.mint.withOpacity(0.12),
+                        color: AppColors.mint.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -568,47 +570,37 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                 const SizedBox(height: 8),
                 _input(remarkController, 'Add a note', TextInputType.text),
                 const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final amount = double.tryParse(amountController.text.trim());
-                      if (amount == null || amount <= 0) {
-                        _showSnackBar('Enter a valid amount.');
-                        return;
-                      }
-                      final prefs = await SharedPreferences.getInstance();
-                      final senderPhone = prefs.getString('phoneNumber') ?? '';
-                      final sendUrl = Uri.parse(SEND_MONEY_PHONE_URL);
-                      final sendResponse = await http.post(
-                        sendUrl,
-                        headers: {'Content-Type': 'application/json'},
-                        body: jsonEncode({
-                          'senderPhone': senderPhone,
-                          'receiverPhone': phoneNumber,
-                          'amount': amount,
-                          'remark': remarkController.text.trim(),
-                        }),
-                      );
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                      if (sendResponse.statusCode == 200) {
-                        _showPaymentSuccess(contact, amountController.text);
-                      } else {
-                        final sendData = json.decode(sendResponse.body);
-                        _showSnackBar(sendData['error'] ?? 'Payment failed.');
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.ink,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text('Pay now'),
-                  ),
+                AppButton(
+                  label: 'Pay now',
+                  onPressed: () async {
+                    final amount =
+                        double.tryParse(amountController.text.trim());
+                    if (amount == null || amount <= 0) {
+                      _showSnackBar('Enter a valid amount.');
+                      return;
+                    }
+                    final prefs = await SharedPreferences.getInstance();
+                    final senderPhone = prefs.getString('phoneNumber') ?? '';
+                    final sendUrl = Uri.parse(SEND_MONEY_PHONE_URL);
+                    final sendResponse = await http.post(
+                      sendUrl,
+                      headers: {'Content-Type': 'application/json'},
+                      body: jsonEncode({
+                        'senderPhone': senderPhone,
+                        'receiverPhone': phoneNumber,
+                        'amount': amount,
+                        'remark': remarkController.text.trim(),
+                      }),
+                    );
+                    if (!mounted) return;
+                    Navigator.pop(context);
+                    if (sendResponse.statusCode == 200) {
+                      _showPaymentSuccess(contact, amountController.text);
+                    } else {
+                      final sendData = json.decode(sendResponse.body);
+                      _showSnackBar(sendData['error'] ?? 'Payment failed.');
+                    }
+                  },
                 ),
               ],
             ),
@@ -634,7 +626,7 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppColors.mint.withOpacity(0.12),
+                  color: AppColors.mint.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(Icons.check_rounded,
@@ -653,16 +645,9 @@ class _PayToContactsPageState extends State<PayToContactsPage> {
                 ),
               ),
               const SizedBox(height: 22),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.ink,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Done'),
-                ),
+              AppButton(
+                label: 'Done',
+                onPressed: () => Navigator.of(context).pop(),
               ),
             ],
           ),

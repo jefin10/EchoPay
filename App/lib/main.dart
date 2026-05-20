@@ -10,6 +10,8 @@ import 'normalUPI/landing.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_typography.dart';
 import 'widgets/app_logo.dart';
+import 'widgets/app_button.dart';
+import 'widgets/motion.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -164,7 +166,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
       vsync: this,
     )..repeat(reverse: true);
     _pulseAnimation = Tween<double>(begin: 0.96, end: 1.04).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _pulseController, curve: AppMotion.inOut),
     );
     Future.delayed(const Duration(milliseconds: 500), _authenticateWithBiometrics);
   }
@@ -336,12 +338,12 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
                 ),
               ),
               const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isAuthenticating ? null : _authenticateWithBiometrics,
-                  child: const Text('Authenticate'),
-                ),
+              AppButton(
+                label: 'Authenticate',
+                icon: Icons.fingerprint_rounded,
+                loading: _isAuthenticating,
+                onPressed:
+                    _isAuthenticating ? null : _authenticateWithBiometrics,
               ),
             ],
           ),

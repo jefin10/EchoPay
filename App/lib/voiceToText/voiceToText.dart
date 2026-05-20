@@ -6,6 +6,7 @@ import '../services/intent_service.dart';
 import '../services/django_service.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
 
 class SpeechScreen extends StatefulWidget {
   const SpeechScreen({super.key});
@@ -533,7 +534,7 @@ class _SpeechScreenState extends State<SpeechScreen>
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: AppColors.mint.withOpacity(0.12),
+                  color: AppColors.mint.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -639,7 +640,8 @@ class _SpeechScreenState extends State<SpeechScreen>
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
         children: [
-          GestureDetector(
+          Pressable(
+            scale: 0.9,
             onTap: () => Navigator.pop(context),
             child: Container(
               width: 44,
@@ -711,7 +713,7 @@ class _SpeechScreenState extends State<SpeechScreen>
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               margin: const EdgeInsets.only(bottom: 14),
               decoration: BoxDecoration(
-                color: AppColors.pop.withOpacity(0.12),
+                color: AppColors.pop.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -723,7 +725,7 @@ class _SpeechScreenState extends State<SpeechScreen>
                       width: 7,
                       height: 7,
                       decoration: BoxDecoration(
-                        color: AppColors.pop.withOpacity(
+                        color: AppColors.pop.withValues(alpha: 
                           0.5 + _pulseController.value * 0.5,
                         ),
                         shape: BoxShape.circle,
@@ -794,7 +796,8 @@ class _SpeechScreenState extends State<SpeechScreen>
   }
 
   Widget _responseCard() {
-    return GestureDetector(
+    return Pressable(
+      scale: 0.98,
       onTap: _clearResponse,
       child: Container(
         width: double.infinity,
@@ -805,8 +808,8 @@ class _SpeechScreenState extends State<SpeechScreen>
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: _isSuccess
-                ? AppColors.mint.withOpacity(0.4)
-                : AppColors.coral.withOpacity(0.4),
+                ? AppColors.mint.withValues(alpha: 0.4)
+                : AppColors.coral.withValues(alpha: 0.4),
             width: 1.5,
           ),
         ),
@@ -817,8 +820,8 @@ class _SpeechScreenState extends State<SpeechScreen>
               height: 38,
               decoration: BoxDecoration(
                 color: _isSuccess
-                    ? AppColors.mint.withOpacity(0.1)
-                    : AppColors.coral.withOpacity(0.1),
+                    ? AppColors.mint.withValues(alpha: 0.1)
+                    : AppColors.coral.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -894,10 +897,11 @@ class _SpeechScreenState extends State<SpeechScreen>
   }
 
   Widget _micButton() {
-    return GestureDetector(
+    return Pressable(
+      scale: 0.94,
       onTap: _speechEnabled
           ? (_isListening ? _stopListening : _startListening)
-          : null,
+          : () {},
       child: AnimatedBuilder(
         animation: _pulseController,
         builder: (context, child) {
@@ -916,7 +920,7 @@ class _SpeechScreenState extends State<SpeechScreen>
             color: _isListening ? AppColors.coral : AppColors.ink,
             borderRadius: BorderRadius.circular(22),
             border: _isListening
-                ? Border.all(color: AppColors.coral.withOpacity(0.3), width: 3)
+                ? Border.all(color: AppColors.coral.withValues(alpha: 0.3), width: 3)
                 : null,
           ),
           child: Icon(

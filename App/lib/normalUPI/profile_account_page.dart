@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
 
 class ProfileAccountPage extends StatefulWidget {
   const ProfileAccountPage({super.key});
@@ -80,7 +81,8 @@ class _ProfileAccountPageState extends State<ProfileAccountPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          child: Column(
+          child: Entrance(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _topBar(),
@@ -104,6 +106,7 @@ class _ProfileAccountPageState extends State<ProfileAccountPage> {
               else
                 _content(),
             ],
+            ),
           ),
         ),
       ),
@@ -113,7 +116,8 @@ class _ProfileAccountPageState extends State<ProfileAccountPage> {
   Widget _topBar() {
     return Row(
       children: [
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: () => Navigator.pop(context),
           child: Container(
             width: 44,
@@ -179,7 +183,7 @@ class _ProfileAccountPageState extends State<ProfileAccountPage> {
                         Text(
                           _phone ?? '',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
@@ -190,23 +194,24 @@ class _ProfileAccountPageState extends State<ProfileAccountPage> {
                 ],
               ),
               const SizedBox(height: 18),
-              GestureDetector(
+              Pressable(
+                scale: 0.97,
                 onTap: _copyUpiId,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.06),
+                    color: Colors.white.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(14),
                     border:
-                        Border.all(color: Colors.white.withOpacity(0.08)),
+                        Border.all(color: Colors.white.withValues(alpha: 0.08)),
                   ),
                   child: Row(
                     children: [
                       Text(
                         'upi id',
                         style: AppTypography.eyebrow(
-                            color: Colors.white.withOpacity(0.6), size: 10),
+                            color: Colors.white.withValues(alpha: 0.6), size: 10),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -269,7 +274,7 @@ class _ProfileAccountPageState extends State<ProfileAccountPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.mint.withOpacity(0.12),
+                  color: AppColors.mint.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text('ACTIVE',

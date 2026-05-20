@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
 
 class RequestMoneyPage extends StatefulWidget {
   const RequestMoneyPage({super.key});
@@ -155,7 +156,8 @@ class _RequestMoneyPageState extends State<RequestMoneyPage>
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       child: Row(
         children: [
-          GestureDetector(
+          Pressable(
+            scale: 0.9,
             onTap: () => Navigator.pop(context),
             child: Container(
               width: 44,
@@ -199,7 +201,8 @@ class _RequestMoneyPageState extends State<RequestMoneyPage>
   Widget _tabButton(String label, int index) {
     final selected = _tabController.index == index;
     return Expanded(
-      child: GestureDetector(
+      child: Pressable(
+        scale: 0.96,
         onTap: () {
           _tabController.animateTo(index);
         },
@@ -358,7 +361,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage>
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.coral,
                       side: BorderSide(
-                          color: AppColors.coral.withOpacity(0.4),
+                          color: AppColors.coral.withValues(alpha: 0.4),
                           width: 1.5),
                     ),
                     child: const Text('Decline'),
@@ -430,7 +433,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage>
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.coral,
                   side: BorderSide(
-                      color: AppColors.coral.withOpacity(0.4), width: 1.5),
+                      color: AppColors.coral.withValues(alpha: 0.4), width: 1.5),
                 ),
                 child: const Text('Cancel request'),
               ),
@@ -545,7 +548,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

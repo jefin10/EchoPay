@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
 
 class BalancePage extends StatefulWidget {
   const BalancePage({super.key});
@@ -82,7 +83,8 @@ class _BalancePageState extends State<BalancePage> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
-            child: Column(
+            child: Entrance(
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _topBar(),
@@ -92,6 +94,7 @@ class _BalancePageState extends State<BalancePage> {
                 if (_error != null) _errorCard(),
                 if (_currentBalance != null && _error == null) _bankCard(),
               ],
+              ),
             ),
           ),
         ),
@@ -102,7 +105,8 @@ class _BalancePageState extends State<BalancePage> {
   Widget _topBar() {
     return Row(
       children: [
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: () => Navigator.pop(context),
           child: Container(
             width: 44,
@@ -119,7 +123,8 @@ class _BalancePageState extends State<BalancePage> {
         const SizedBox(width: 12),
         Text('balance', style: AppTypography.heading(size: 22)),
         const Spacer(),
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: () =>
               setState(() => _isBalanceVisible = !_isBalanceVisible),
           child: Container(
@@ -140,7 +145,8 @@ class _BalancePageState extends State<BalancePage> {
           ),
         ),
         const SizedBox(width: 8),
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: _fetchBalance,
           child: Container(
             width: 44,
@@ -172,14 +178,14 @@ class _BalancePageState extends State<BalancePage> {
           Text(
             _userName != null ? 'hi, ${_userName!.toLowerCase()}' : 'hello',
             style: AppTypography.eyebrow(
-              color: Colors.white.withOpacity(0.55),
+              color: Colors.white.withValues(alpha: 0.55),
             ),
           ),
           const SizedBox(height: 6),
           Text(
             'available balance',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -202,7 +208,7 @@ class _BalancePageState extends State<BalancePage> {
                   '₹',
                   style: AppTypography.amount(
                     size: 32,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     weight: FontWeight.w700,
                   ),
                 ),
@@ -251,9 +257,9 @@ class _BalancePageState extends State<BalancePage> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.coral.withOpacity(0.08),
+        color: AppColors.coral.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.coral.withOpacity(0.3)),
+        border: Border.all(color: AppColors.coral.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -331,7 +337,7 @@ class _BalancePageState extends State<BalancePage> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.mint.withOpacity(0.12),
+                  color: AppColors.mint.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(

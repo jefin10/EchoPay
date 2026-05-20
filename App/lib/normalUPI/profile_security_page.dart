@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
 
 class ProfileSecurityPage extends StatefulWidget {
   const ProfileSecurityPage({super.key});
@@ -39,7 +40,8 @@ class _ProfileSecurityPageState extends State<ProfileSecurityPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          child: Column(
+          child: Entrance(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _topBar(),
@@ -62,6 +64,7 @@ class _ProfileSecurityPageState extends State<ProfileSecurityPage> {
               const SizedBox(height: 20),
               _noteCard(),
             ],
+            ),
           ),
         ),
       ),
@@ -71,7 +74,8 @@ class _ProfileSecurityPageState extends State<ProfileSecurityPage> {
   Widget _topBar() {
     return Row(
       children: [
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: () => Navigator.pop(context),
           child: Container(
             width: 44,
@@ -134,7 +138,7 @@ class _ProfileSecurityPageState extends State<ProfileSecurityPage> {
           Switch(
             value: _biometricEnabled,
             onChanged: _toggleBiometric,
-            activeColor: AppColors.ink,
+            activeThumbColor: AppColors.ink,
             activeTrackColor: AppColors.pop,
           ),
         ],
@@ -220,7 +224,7 @@ class _ProfileSecurityPageState extends State<ProfileSecurityPage> {
       decoration: BoxDecoration(
         color: AppColors.popSoft,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.pop.withOpacity(0.4)),
+        border: Border.all(color: AppColors.pop.withValues(alpha: 0.4)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
+import '../widgets/app_button.dart';
 import '../voiceToText/voiceToText.dart';
 import '../services/intent_service.dart';
 
@@ -25,7 +27,7 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
       vsync: this,
     )..repeat(reverse: true);
     _pulseAnimation = Tween<double>(begin: 0.96, end: 1.06).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _pulseController, curve: AppMotion.inOut),
     );
     _checkServerConnection();
   }
@@ -49,7 +51,8 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
-          child: Column(
+          child: Entrance(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildTopRow(),
@@ -86,6 +89,7 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
               const SizedBox(height: 16),
               _buildStartButton(),
             ],
+            ),
           ),
         ),
       ),
@@ -108,7 +112,8 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
         const Spacer(),
         _statusChip(),
         const SizedBox(width: 10),
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: _showHelpDialog,
           child: Container(
             width: 40,
@@ -130,7 +135,8 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
   }
 
   Widget _statusChip() {
-    return GestureDetector(
+    return Pressable(
+      scale: 0.93,
       onTap: _checkServerConnection,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -166,7 +172,8 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
   }
 
   Widget _buildMicButton() {
-    return GestureDetector(
+    return Pressable(
+      scale: 0.95,
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const SpeechScreen()),
@@ -182,7 +189,7 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
                 height: 200 * _pulseAnimation.value,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.pop.withOpacity(0.18),
+                  color: AppColors.pop.withValues(alpha: 0.18),
                 ),
               ),
               Container(
@@ -218,7 +225,8 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
         padding: EdgeInsets.zero,
         itemCount: samples.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, i) => GestureDetector(
+        itemBuilder: (_, i) => Pressable(
+          scale: 0.94,
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SpeechScreen()),
@@ -253,29 +261,12 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
   }
 
   Widget _buildStartButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SpeechScreen()),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.ink,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.mic_rounded, size: 20),
-            SizedBox(width: 10),
-            Text('Start voice command'),
-          ],
-        ),
+    return AppButton(
+      label: 'Start voice command',
+      icon: Icons.mic_rounded,
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const SpeechScreen()),
       ),
     );
   }

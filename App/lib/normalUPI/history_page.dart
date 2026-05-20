@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -115,7 +116,8 @@ class _HistoryPageState extends State<HistoryPage> {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       child: Row(
         children: [
-          GestureDetector(
+          Pressable(
+            scale: 0.9,
             onTap: () => Navigator.pop(context),
             child: Container(
               width: 44,
@@ -159,7 +161,8 @@ class _HistoryPageState extends State<HistoryPage> {
         itemBuilder: (_, i) {
           final filter = _filters[i];
           final isSelected = filter == _selectedFilter;
-          return GestureDetector(
+          return Pressable(
+            scale: 0.94,
             onTap: () => setState(() => _selectedFilter = filter),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
@@ -307,7 +310,7 @@ class _HistoryPageState extends State<HistoryPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.12),
+                        color: statusColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(

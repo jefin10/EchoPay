@@ -6,6 +6,8 @@ import 'dart:convert';
 import 'constants/api_constants.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_typography.dart';
+import 'widgets/app_button.dart';
+import 'widgets/motion.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -76,7 +78,8 @@ class _SignupPageState extends State<SignupPage> {
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
           child: Form(
             key: _formKey,
-            child: Column(
+            child: Entrance(
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -134,35 +137,23 @@ class _SignupPageState extends State<SignupPage> {
                   },
                 ),
 
-                if (_error != null) ...[
-                  const SizedBox(height: 16),
-                  _buildErrorChip(_error!),
-                ],
+                AnimatedSize(
+                  duration: AppMotion.medium,
+                  curve: AppMotion.out,
+                  alignment: Alignment.topCenter,
+                  child: _error == null
+                      ? const SizedBox(width: double.infinity)
+                      : Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Entrance(child: _buildErrorChip(_error!)),
+                        ),
+                ),
 
                 const SizedBox(height: 36),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _submitSignup,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.ink,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text('Continue'),
-                  ),
+                AppButton(
+                  label: 'Continue',
+                  loading: _isLoading,
+                  onPressed: _isLoading ? null : _submitSignup,
                 ),
                 const SizedBox(height: 14),
                 Center(
@@ -175,6 +166,7 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                 ),
               ],
+              ),
             ),
           ),
         ),
@@ -239,9 +231,9 @@ class _SignupPageState extends State<SignupPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.coral.withOpacity(0.08),
+        color: AppColors.coral.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.coral.withOpacity(0.3)),
+        border: Border.all(color: AppColors.coral.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
 
 class ProfileAboutPage extends StatelessWidget {
   const ProfileAboutPage({super.key});
@@ -12,7 +13,8 @@ class ProfileAboutPage extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          child: Column(
+          child: Entrance(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _topBar(context),
@@ -31,6 +33,7 @@ class ProfileAboutPage extends StatelessWidget {
               const SizedBox(height: 16),
               _versionRow(),
             ],
+            ),
           ),
         ),
       ),
@@ -40,7 +43,8 @@ class ProfileAboutPage extends StatelessWidget {
   Widget _topBar(BuildContext context) {
     return Row(
       children: [
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: () => Navigator.pop(context),
           child: Container(
             width: 44,
@@ -94,7 +98,7 @@ class ProfileAboutPage extends StatelessWidget {
                   Text(
                     'Version 1.0.0',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -107,7 +111,7 @@ class ProfileAboutPage extends StatelessWidget {
           Text(
             'Pay with your voice. EchoPay lets you send and receive money just by speaking. Built for speed, designed for trust.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.65),
+              color: Colors.white.withValues(alpha: 0.65),
               fontSize: 13,
               height: 1.55,
               fontWeight: FontWeight.w500,

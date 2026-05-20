@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../payToUpiId/payToUpiId.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
 import 'my_qr_page.dart';
 
 class QRScannerPage extends StatefulWidget {
@@ -174,15 +175,16 @@ class _QRScannerPageState extends State<QRScannerPage> {
   }
 
   Widget _topIcon(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
+    return Pressable(
+      scale: 0.9,
       onTap: onTap,
       child: Container(
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.18)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         ),
         child: Icon(icon, color: Colors.white, size: 18),
       ),
@@ -223,7 +225,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
       decoration: BoxDecoration(
         color: AppColors.surfaceDim,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.mint.withOpacity(0.4)),
+        border: Border.all(color: AppColors.mint.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,7 +359,8 @@ class _QRScannerPageState extends State<QRScannerPage> {
   }
 
   Widget _action(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
+    return Pressable(
+      scale: 0.97,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),

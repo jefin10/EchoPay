@@ -6,6 +6,8 @@ import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
+import '../widgets/app_button.dart';
 
 class MyQRPage extends StatefulWidget {
   const MyQRPage({super.key});
@@ -143,7 +145,8 @@ class _MyQRPageState extends State<MyQRPage> {
   Widget _buildBody() {
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-      child: Column(
+      child: Entrance(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _topBar(),
@@ -154,6 +157,7 @@ class _MyQRPageState extends State<MyQRPage> {
           const SizedBox(height: 22),
           _actionButtons(),
         ],
+        ),
       ),
     );
   }
@@ -161,7 +165,8 @@ class _MyQRPageState extends State<MyQRPage> {
   Widget _topBar() {
     return Row(
       children: [
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: () => Navigator.pop(context),
           child: Container(
             width: 44,
@@ -178,7 +183,8 @@ class _MyQRPageState extends State<MyQRPage> {
         const SizedBox(width: 12),
         Text('my qr', style: AppTypography.heading(size: 22)),
         const Spacer(),
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: _shareQR,
           child: Container(
             width: 44,
@@ -243,7 +249,7 @@ class _MyQRPageState extends State<MyQRPage> {
                     Text(
                       _userUpiId ?? '',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -348,21 +354,10 @@ class _MyQRPageState extends State<MyQRPage> {
   Widget _actionButtons() {
     return Column(
       children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: _shareQR,
-            icon: const Icon(Icons.share_rounded, size: 18),
-            label: const Text('Share QR'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.ink,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
+        AppButton(
+          label: 'Share QR',
+          icon: Icons.share_rounded,
+          onPressed: _shareQR,
         ),
         const SizedBox(height: 12),
         SizedBox(

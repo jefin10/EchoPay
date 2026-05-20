@@ -5,6 +5,8 @@ import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
+import '../widgets/app_button.dart';
 
 class PayToUpiIdPage extends StatefulWidget {
   final String? prefilledUpiId;
@@ -145,7 +147,7 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppColors.mint.withOpacity(0.12),
+                  color: AppColors.mint.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(Icons.check_rounded,
@@ -164,19 +166,12 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
                 ),
               ),
               const SizedBox(height: 22),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.ink,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Done'),
-                ),
+              AppButton(
+                label: 'Done',
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
               ),
             ],
           ),
@@ -198,7 +193,8 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          child: Column(
+          child: Entrance(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _topBar(),
@@ -229,33 +225,15 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
               const SizedBox(height: 8),
               _input(_remarkController, 'Add a note', TextInputType.text),
               const SizedBox(height: 28),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: (_userData != null && !_loading) ? _processPayment : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.ink,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.borderStrong,
-                    disabledForegroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: _loading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text('Pay now'),
-                ),
+              AppButton(
+                label: 'Pay now',
+                loading: _loading,
+                onPressed: (_userData != null && !_loading)
+                    ? _processPayment
+                    : null,
               ),
             ],
+            ),
           ),
         ),
       ),
@@ -265,7 +243,8 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
   Widget _topBar() {
     return Row(
       children: [
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: () => Navigator.pop(context),
           child: Container(
             width: 44,
@@ -319,8 +298,9 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
               ),
             ),
           ),
-          GestureDetector(
-            onTap: _loading ? null : _searchUser,
+          Pressable(
+            scale: 0.92,
+            onTap: _loading ? () {} : _searchUser,
             child: Container(
               width: 38,
               height: 38,
@@ -396,7 +376,7 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             decoration: BoxDecoration(
-              color: AppColors.mint.withOpacity(0.12),
+              color: AppColors.mint.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -474,9 +454,9 @@ class _PayToUpiIdPageState extends State<PayToUpiIdPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.coral.withOpacity(0.08),
+        color: AppColors.coral.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.coral.withOpacity(0.3)),
+        border: Border.all(color: AppColors.coral.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

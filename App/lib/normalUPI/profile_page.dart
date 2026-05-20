@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
+import '../widgets/motion.dart';
 import 'profile_account_page.dart';
 import 'profile_security_page.dart';
 import 'profile_about_page.dart';
@@ -356,7 +357,8 @@ class _ProfilePageState extends State<ProfilePage> {
         bottom: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
-          child: Column(
+          child: Entrance(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _topBar(),
@@ -369,6 +371,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 20),
               _logoutButton(),
             ],
+            ),
           ),
         ),
       ),
@@ -380,7 +383,8 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         Text('profile', style: AppTypography.heading(size: 22)),
         const Spacer(),
-        GestureDetector(
+        Pressable(
+          scale: 0.9,
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const ProfileSecurityPage()),
@@ -461,7 +465,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Text(
                       _userPhone,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -472,23 +476,24 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
           const SizedBox(height: 20),
-          GestureDetector(
+          Pressable(
+            scale: 0.97,
             onTap: _copyUpiId,
             child: Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.06),
+                color: Colors.white.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(14),
                 border:
-                    Border.all(color: Colors.white.withOpacity(0.08)),
+                    Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
               child: Row(
                 children: [
                   Text(
                     'upi id',
                     style: AppTypography.eyebrow(
-                        color: Colors.white.withOpacity(0.6), size: 10),
+                        color: Colors.white.withValues(alpha: 0.6), size: 10),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -586,9 +591,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _menuItem(
       IconData icon, String title, String subtitle, VoidCallback onTap) {
-    return InkWell(
+    return Pressable(
+      scale: 0.98,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding:
             const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
@@ -656,7 +661,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         style: OutlinedButton.styleFrom(
           side: BorderSide(
-              color: AppColors.coral.withOpacity(0.5), width: 1.5),
+              color: AppColors.coral.withValues(alpha: 0.5), width: 1.5),
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14)),

@@ -1,4 +1,5 @@
 import { formatINR, initials, relativeDay } from '@/core/utils/format';
+import { parseAmount, sanitizeAmountInput } from '@/features/payments/amount';
 import { isPhoneLike, isUpiId, localPhone, toIndianE164 } from '@/core/utils/phone';
 
 describe('formatINR', () => {
@@ -43,5 +44,20 @@ describe('phone helpers', () => {
     expect(isPhoneLike('Ravi')).toBe(false);
     expect(isUpiId('ravi@upi')).toBe(true);
     expect(isUpiId('ravi')).toBe(false);
+  });
+});
+
+describe('amount parsing', () => {
+  it('accepts positive amounts with up to 2 decimals', () => {
+    expect(parseAmount('250')).toBe(250);
+    expect(parseAmount('1,000.50')).toBe(1000.5);
+    expect(parseAmount('0')).toBeNull();
+    expect(parseAmount('-5')).toBeNull();
+    expect(parseAmount('1.234')).toBeNull();
+    expect(parseAmount('abc')).toBeNull();
+  });
+  it('sanitises keystrokes', () => {
+    expect(sanitizeAmountInput('12a.3456')).toBe('12.34');
+    expect(sanitizeAmountInput('1.2.3')).toBe('1.23');
   });
 });

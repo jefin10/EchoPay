@@ -7,6 +7,7 @@ import { mockBackend, press, signIn } from './test-utils';
 // The scanner fires onBarcodeScanned as soon as it mounts, with a fixed payload.
 let mockPayload = 'upi://pay?pa=anu%40upi&pn=Anu%20K&am=150&cu=INR';
 jest.mock('expo-camera', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { useEffect } = require('react');
   return {
     useCameraPermissions: () => [{ granted: true, canAskAgain: true }, jest.fn()],

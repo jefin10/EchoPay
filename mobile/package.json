@@ -67,7 +67,8 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/android/",
-      "/ios/"
+      "/ios/",
+      "/src/__tests__/test-utils.ts"
     ],
     "moduleNameMapper": {
       "^expo-sqlite/kv-store$": "<rootDir>/jest/kv-store-mock.js"

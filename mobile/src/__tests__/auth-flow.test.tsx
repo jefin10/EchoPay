@@ -1,6 +1,8 @@
-import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
+import { renderRouter, screen } from 'expo-router/testing-library';
 
 import { useSession } from '@/core/storage/session';
+
+import { press, type } from './test-utils';
 
 jest.mock('expo-local-authentication', () => ({
   hasHardwareAsync: jest.fn().mockResolvedValue(true),
@@ -12,12 +14,6 @@ const fetchMock = jest.fn();
 globalThis.fetch = fetchMock as unknown as typeof fetch;
 const respond = (body: unknown, status = 200) =>
   Promise.resolve({ status, text: () => Promise.resolve(JSON.stringify(body)) });
-
-type Element = Parameters<typeof fireEvent.press>[0];
-
-// Await each interaction so async state updates settle before asserting.
-const type = (el: Element, text: string) => act(async () => fireEvent.changeText(el, text));
-const press = (el: Element) => act(async () => fireEvent.press(el));
 
 beforeEach(() => {
   fetchMock.mockReset();

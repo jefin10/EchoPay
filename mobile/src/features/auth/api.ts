@@ -12,12 +12,17 @@ export interface OtpVerification {
 
 type Json = Record<string, unknown>;
 
-/** Requests an OTP for `phoneNumber`. Throws ApiException on failure. */
-export async function sendOtp(phoneNumber: string): Promise<void> {
+/**
+ * Requests an OTP for `phoneNumber`. Throws ApiException on failure.
+ * Resolves to the code itself when the backend runs with DEBUG (no SMS is
+ * sent yet), so dev builds can show it.
+ */
+export async function sendOtp(phoneNumber: string): Promise<string | null> {
   const json = await getJson<Json>(withQuery(Endpoints.sendOtp, { phone: phoneNumber }));
   if (json?.status !== 'success') {
     throw new ApiException(String(json?.message ?? 'Failed to send OTP'));
   }
+  return json.otp ? String(json.otp) : null;
 }
 
 /** Verifies `otp` for `phoneNumber`. Throws ApiException on failure. */

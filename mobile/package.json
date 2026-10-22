@@ -71,6 +71,10 @@
     ],
     "moduleNameMapper": {
       "^expo-sqlite/kv-store$": "<rootDir>/jest/kv-store-mock.js"
-    }
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest/setup.jsx"
+    ],
+    "resolver": "react-native-reanimated/jest/resolver"
   }
 }

@@ -1,9 +1,12 @@
-import { Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
 
+import { selectNeedsUnlock, useSession } from '@/core/storage/session';
+
+/** Entry point and guard anchor: send the user wherever their session allows. */
 export default function Index() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>EchoPay</Text>
-    </View>
-  );
+  const isLoggedIn = useSession((s) => s.isLoggedIn);
+  const needsUnlock = useSession(selectNeedsUnlock);
+  if (!isLoggedIn) return <Redirect href="/phone" />;
+  if (needsUnlock) return <Redirect href="/biometric" />;
+  return <Redirect href="/home" />;
 }

@@ -39,12 +39,15 @@ interface SessionState {
   userName: string | null;
   upiId: string | null;
   flags: Record<FlagKey, boolean>;
+  /** Biometric unlock passed this app run. In memory only, so every launch asks again. */
+  unlocked: boolean;
 
   setPhoneNumber(phone: string): void;
   setLoggedIn(value: boolean): void;
   /** Persist the full identity after a successful login/signup. */
   saveSession(args: { phoneNumber: string; userName?: string | null; upiId?: string | null }): void;
   setFlag(key: FlagKey, value: boolean): void;
+  setUnlocked(value: boolean): void;
   /** Wipe all persisted state (logout). */
   clear(): void;
 }
@@ -65,6 +68,7 @@ const readInitialState = () => ({
   userName: Storage.getItemSync(K.userName) ?? Storage.getItemSync(K.upiName),
   upiId: Storage.getItemSync(K.upiId) ?? Storage.getItemSync(K.upiMail),
   flags: readFlags(),
+  unlocked: false,
 });
 
 export const useSession = create<SessionState>()((set) => ({
@@ -100,11 +104,18 @@ export const useSession = create<SessionState>()((set) => ({
     set((s) => ({ flags: { ...s.flags, [key]: value } }));
   },
 
+  setUnlocked(value) {
+    set({ unlocked: value });
+  },
+
   clear() {
     Storage.clearSync();
     set({ ...readInitialState() });
   },
 }));
+
+/** Logged in but still has to pass the biometric gate this run. */
+export const selectNeedsUnlock = (s: SessionState) => s.isLoggedIn && s.flags.biometricEnabled && !s.unlocked;
 
 /** Non-hook accessor for use outside React (repositories, query functions). */
 export const getSession = () => useSession.getState();

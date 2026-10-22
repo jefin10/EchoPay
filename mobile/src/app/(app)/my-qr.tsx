@@ -1,4 +1,3 @@
-import * as Clipboard from 'expo-clipboard';
 import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import { useRef, useState, type ComponentRef } from 'react';
@@ -10,6 +9,7 @@ import { AppButton, AppText, Avatar, Entrance, IconButton, Screen, ScreenHeader,
 import { Colors, Type } from '@/core/theme';
 import { useProfile } from '@/features/account/hooks';
 import { buildUpiUri } from '@/features/payments/upi-qr';
+import { useCopyUpi } from '@/features/profile/use-copy-upi';
 
 const STEPS = [
   'Show this QR to anyone who wants to pay you',
@@ -49,10 +49,7 @@ export default function MyQrScreen() {
     }
   };
 
-  const copy = async () => {
-    await Clipboard.setStringAsync(upiId);
-    toast('UPI ID copied', 'success');
-  };
+  const copy = useCopyUpi(upiId);
 
   return (
     <Screen>

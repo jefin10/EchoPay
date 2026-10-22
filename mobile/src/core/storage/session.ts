@@ -1,0 +1,110 @@
+import Storage from 'expo-sqlite/kv-store';
+import { create } from 'zustand';
+
+/**
+ * Everything the app persists locally, behind one typed store.
+ *
+ * Reads are synchronous (expo-sqlite kv-store), so the root layout can pick
+ * the first screen without a loading flash — the same guarantee the Flutter
+ * app got by awaiting SharedPreferences before `runApp`. Keys match the
+ * Flutter app's SharedPreferences keys.
+ */
+const K = {
+  phoneNumber: 'phoneNumber',
+  isLoggedIn: 'isLoggedIn',
+  userName: 'userName',
+  upiId: 'upiId',
+  // Legacy fallbacks from older Flutter builds.
+  upiName: 'upiName',
+  upiMail: 'upiMail',
+} as const;
+
+/** Boolean preferences (biometrics, notification toggles). */
+export type FlagKey =
+  | 'biometricEnabled'
+  | 'notif_payments'
+  | 'notif_requests'
+  | 'notif_promotions';
+
+const FLAG_DEFAULTS: Record<FlagKey, boolean> = {
+  biometricEnabled: true,
+  notif_payments: true,
+  notif_requests: true,
+  notif_promotions: false,
+};
+
+interface SessionState {
+  phoneNumber: string | null;
+  isLoggedIn: boolean;
+  userName: string | null;
+  upiId: string | null;
+  flags: Record<FlagKey, boolean>;
+
+  setPhoneNumber(phone: string): void;
+  setLoggedIn(value: boolean): void;
+  /** Persist the full identity after a successful login/signup. */
+  saveSession(args: { phoneNumber: string; userName?: string | null; upiId?: string | null }): void;
+  setFlag(key: FlagKey, value: boolean): void;
+  /** Wipe all persisted state (logout). */
+  clear(): void;
+}
+
+const getBool = (key: string, fallback: boolean) => {
+  const raw = Storage.getItemSync(key);
+  return raw == null ? fallback : raw === 'true';
+};
+
+const readFlags = () =>
+  Object.fromEntries(
+    (Object.keys(FLAG_DEFAULTS) as FlagKey[]).map((k) => [k, getBool(k, FLAG_DEFAULTS[k])]),
+  ) as Record<FlagKey, boolean>;
+
+const readInitialState = () => ({
+  phoneNumber: Storage.getItemSync(K.phoneNumber),
+  isLoggedIn: getBool(K.isLoggedIn, false),
+  userName: Storage.getItemSync(K.userName) ?? Storage.getItemSync(K.upiName),
+  upiId: Storage.getItemSync(K.upiId) ?? Storage.getItemSync(K.upiMail),
+  flags: readFlags(),
+});
+
+export const useSession = create<SessionState>()((set) => ({
+  ...readInitialState(),
+
+  setPhoneNumber(phone) {
+    Storage.setItemSync(K.phoneNumber, phone);
+    set({ phoneNumber: phone });
+  },
+
+  setLoggedIn(value) {
+    Storage.setItemSync(K.isLoggedIn, String(value));
+    set({ isLoggedIn: value });
+  },
+
+  saveSession({ phoneNumber, userName, upiId }) {
+    Storage.setItemSync(K.phoneNumber, phoneNumber);
+    Storage.setItemSync(K.isLoggedIn, 'true');
+    const patch: Partial<SessionState> = { phoneNumber, isLoggedIn: true };
+    if (userName) {
+      Storage.setItemSync(K.userName, userName);
+      patch.userName = userName;
+    }
+    if (upiId) {
+      Storage.setItemSync(K.upiId, upiId);
+      patch.upiId = upiId;
+    }
+    set(patch);
+  },
+
+  setFlag(key, value) {
+    Storage.setItemSync(key, String(value));
+    set((s) => ({ flags: { ...s.flags, [key]: value } }));
+  },
+
+  clear() {
+    Storage.clearSync();
+    set({ ...readInitialState() });
+  },
+}));
+
+/** Non-hook accessor for use outside React (repositories, query functions). */
+export const getSession = () => useSession.getState();

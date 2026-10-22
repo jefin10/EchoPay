@@ -67,6 +67,9 @@
       "/node_modules/",
       "/android/",
       "/ios/"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^expo-sqlite/kv-store$": "<rootDir>/jest/kv-store-mock.js"
+    }
   }
 }

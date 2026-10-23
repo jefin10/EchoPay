@@ -1,3 +1,6 @@
+# Training notebooks and dataset (not needed to serve)
+training/
+
 # Python
 __pycache__/
 *.py[cod]

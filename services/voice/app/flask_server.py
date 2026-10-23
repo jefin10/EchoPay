@@ -12,8 +12,9 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for the mobile app
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-INTENT_MODEL_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "Intent_classifier"))
-NER_MODEL_PATH = os.path.normpath(os.path.join(BASE_DIR, "..", "keyword_ner_model"))
+MODELS_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "models"))
+INTENT_MODEL_DIR = os.path.join(MODELS_DIR, "intent")
+NER_MODEL_PATH = os.path.join(MODELS_DIR, "ner")
 
 # Load intent classification model and preprocessors
 print("Loading intent classification model...")

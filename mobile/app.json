@@ -1,0 +1,93 @@
+{
+  "expo": {
+    "name": "EchoPay",
+    "slug": "echopay",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "echopay",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.jefin10.echopay",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.jefin10.echopay",
+      "adaptiveIcon": {
+        "backgroundColor": "#F5F1E6",
+        "foregroundImage": "./assets/images/adaptive-icon.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F5F1E6",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 120
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "EchoPay uses the microphone for voice payments.",
+          "speechRecognitionPermission": "EchoPay uses speech recognition to understand voice commands."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "EchoPay uses Face ID to confirm it's you before payments."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "EchoPay uses the camera to scan UPI QR codes.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "EchoPay reads your contacts so you can pay them quickly."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "EchoPay reads QR codes from images you pick.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "EchoPay saves your payment QR code to your photos."
+        }
+      ],
+      "expo-sqlite",
+      "expo-sharing",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

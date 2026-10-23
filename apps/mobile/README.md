@@ -1,13 +1,13 @@
 # EchoPay Mobile (React Native)
 
-The EchoPay mobile app, built with Expo and TypeScript. It talks to the backends started by the root `docker-compose.yml` (Django :8000, Flask :5002, Rasa :5005).
+The EchoPay mobile app, built with Expo and TypeScript. It talks to the backends started by `services/docker-compose.yml` (Django :8000, Flask :5002, Rasa :5005).
 
 This app replaces the original Flutter client, which is preserved on the `flutter-app` branch.
 
 ## Setup
 
 ```bash
-cd mobile
+cd apps/mobile
 npm install
 cp .env.example .env.local   # set EXPO_PUBLIC_API_HOST to the machine running docker-compose
 ```
@@ -40,7 +40,7 @@ npx eas-cli@latest build --platform android --profile preview      # internal AP
 npx eas-cli@latest build --platform android --profile production
 ```
 
-Set `EXPO_PUBLIC_API_HOST` for the target backend (see `eas.json`). The landing page in `../echopay` downloads `releases/latest/download/app-release.apk`, so upload the build to a GitHub release under that file name.
+Set `EXPO_PUBLIC_API_HOST` for the target backend (see `eas.json`). The landing page in `../web` downloads `releases/latest/download/app-release.apk`, so upload the build to a GitHub release under that file name.
 
 ## Layout
 

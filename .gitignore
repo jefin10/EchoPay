@@ -1,9 +1,16 @@
+# Python
 venv/
-./venv
-.rasa/
+.venv/
 __pycache__/
-./venv
-.env.example2
-.env
-interview.md
 
+# Rasa / Keras local state
+.rasa/
+.config/
+.keras/
+
+# Environment
+.env
+.env.example2
+
+# Personal notes
+interview.md

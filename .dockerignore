@@ -23,8 +23,9 @@ README.md
 # Docker
 docker-compose.override.yml
 
-# Flutter/Dart (not needed in backend containers)
-App/
+# Mobile app and website (not needed in backend containers)
+mobile/
+echopay/
 
 # Test files
 test_*.py

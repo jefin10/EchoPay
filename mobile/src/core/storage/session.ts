@@ -5,18 +5,13 @@ import { create } from 'zustand';
  * Everything the app persists locally, behind one typed store.
  *
  * Reads are synchronous (expo-sqlite kv-store), so the root layout can pick
- * the first screen without a loading flash — the same guarantee the Flutter
- * app got by awaiting SharedPreferences before `runApp`. Keys match the
- * Flutter app's SharedPreferences keys.
+ * the first screen without a loading flash.
  */
 const K = {
   phoneNumber: 'phoneNumber',
   isLoggedIn: 'isLoggedIn',
   userName: 'userName',
   upiId: 'upiId',
-  // Legacy fallbacks from older Flutter builds.
-  upiName: 'upiName',
-  upiMail: 'upiMail',
 } as const;
 
 /** Boolean preferences (biometrics, notification toggles). */
@@ -65,8 +60,8 @@ const readFlags = () =>
 const readInitialState = () => ({
   phoneNumber: Storage.getItemSync(K.phoneNumber),
   isLoggedIn: getBool(K.isLoggedIn, false),
-  userName: Storage.getItemSync(K.userName) ?? Storage.getItemSync(K.upiName),
-  upiId: Storage.getItemSync(K.upiId) ?? Storage.getItemSync(K.upiMail),
+  userName: Storage.getItemSync(K.userName),
+  upiId: Storage.getItemSync(K.upiId),
   flags: readFlags(),
   unlocked: false,
 });

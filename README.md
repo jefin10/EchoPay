@@ -1,6 +1,8 @@
 # EchoPay: Voice-Enabled UPI Payment System
 
-EchoPay is a multi-service UPI payment platform that combines a Flutter mobile application with Django transaction APIs, a Flask voice-intelligence service, and a Rasa conversational assistant.
+EchoPay is a multi-service UPI payment platform that combines a React Native (Expo) mobile app with Django transaction APIs, a Flask voice-intelligence service, and a Rasa conversational assistant.
+
+The original Flutter app lives on the [`flutter-app`](https://github.com/jefin10/EchoPay/tree/flutter-app) branch and is no longer maintained on `main`.
 
 ## Project Overview
 
@@ -17,7 +19,8 @@ The platform supports manual and voice-first payment interactions. Voice input i
 
 ## Technology Stack
 
-- Frontend: Flutter 3.8.1+
+- Mobile app: React Native 0.88 + Expo SDK 58, TypeScript, Expo Router, React Query
+- Landing page: Next.js 16 + Tailwind CSS 4
 - Backend APIs: Django 5.1.6 + PostgreSQL 15
 - Voice Intelligence Service: Flask 2.3.3 + TensorFlow 2.17 (CNN classifier)
 - Conversational AI: Rasa 3.6.0
@@ -27,7 +30,7 @@ The platform supports manual and voice-first payment interactions. Voice input i
 
 ```
 +-----------------------+
-|  Flutter Mobile App   |
+|   Mobile App (Expo)   |
 |  Voice and Manual UX  |
 +-----------+-----------+
             |
@@ -54,14 +57,13 @@ The platform supports manual and voice-first payment interactions. Voice input i
 ## Repository Structure
 
 ```
-VoiceUPI/
-├── App/                          # Flutter application
+EchoPay/
+├── mobile/                       # React Native (Expo) app
 ├── Backend/                      # Flask voice and ML service
 ├── DJBackend/                    # Django transaction backend
 ├── Rasa/                         # Rasa conversational service
+├── echopay/                      # Next.js landing page
 ├── docker-compose.yml
-├── docker-compose.dev.yml
-├── DOCKER_SETUP.md
 └── README.md
 ```
 
@@ -70,8 +72,8 @@ VoiceUPI/
 ### 1. Clone and Enter the Repository
 
 ```bash
-git clone <repository-url>
-cd VoiceUPI
+git clone https://github.com/jefin10/EchoPay.git
+cd EchoPay
 ```
 
 ### 2. Start Backend Services
@@ -82,20 +84,29 @@ docker-compose up -d
 docker-compose ps
 ```
 
-### 3. Configure Flutter Service Endpoints
+### 3. Run the Mobile App
 
-Update the URLs in `App/lib/constants/api_constants.dart` based on your runtime environment:
+```bash
+cd mobile
+npm install
+cp .env.example .env.local   # set EXPO_PUBLIC_API_HOST
+npm run android              # builds a development build and starts Metro
+```
+
+`EXPO_PUBLIC_API_HOST` is the machine running docker-compose:
 
 - Android emulator: `10.0.2.2`
 - iOS simulator: `localhost` or host IP
 - Physical device: host machine LAN IP
 
-### 4. Run the Flutter App
+See [`mobile/README.md`](mobile/README.md) for tests, project layout and release builds.
+
+### 4. Landing Page (optional)
 
 ```bash
-cd App
-flutter pub get
-flutter run
+cd echopay
+npm install
+npm run dev
 ```
 
 ## Docker Operations
@@ -105,7 +116,6 @@ docker-compose logs -f
 docker-compose restart
 docker-compose down
 docker-compose up -d --build
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
 ## Service Endpoints
@@ -116,8 +126,13 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 ## API Documentation
 
-- Django API documentation: `DJBackend/API_DOCUMENTATION.md`
-- Flask API documentation: `Backend/API_DOCUMENTATION.md`
+- Django API documentation: [`DJBackend/API_DOCUMENTATION.md`](DJBackend/API_DOCUMENTATION.md)
+- Flask API documentation: [`Backend/API_DOCUMENTATION.md`](Backend/API_DOCUMENTATION.md)
+
+## Known Limitations
+
+- The Django API has no authentication: endpoints trust the phone number sent by the client. Do not deploy it with real money.
+- OTPs are generated but not sent by SMS; with `DEBUG` on, the backend returns the code in the response.
 
 ## License
 

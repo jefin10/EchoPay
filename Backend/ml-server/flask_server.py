@@ -9,7 +9,7 @@ import spacy
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for Flutter app
+CORS(app)  # Enable CORS for the mobile app
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INTENT_MODEL_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "Intent_classifier"))

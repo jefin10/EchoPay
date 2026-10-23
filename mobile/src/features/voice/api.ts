@@ -73,8 +73,8 @@ export async function processCommand(text: string, userPhone = ''): Promise<Voic
  *
  * The Flask name regex also matches command words ("send 500 to 98…" yields
  * recipient_name "Send" next to the phone number), so the most precise entity
- * wins: UPI ID, then phone number, then name. The Flutter app checked name
- * first, which made phone and UPI voice payments fail.
+ * wins: UPI ID, then phone number, then name. Checking the name first would
+ * make phone and UPI voice payments fail.
  */
 export function pickEntities(entities: IntentResponse['entities']): Pick<
   VoiceOutcome,
@@ -102,7 +102,7 @@ export function pickEntities(entities: IntentResponse['entities']): Pick<
 export async function chat(message: string, userPhone = ''): Promise<VoiceOutcome> {
   try {
     const replies = await postJson<{ text?: string }[]>(Endpoints.rasaChat, {
-      // One conversation per user; the Flutter app shared a single 'user' sender.
+      // One Rasa conversation per user.
       sender: userPhone || 'echopay-guest',
       message,
     });

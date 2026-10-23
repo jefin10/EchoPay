@@ -5,7 +5,7 @@ export type AuthOutcome = 'success' | 'cancelled' | 'unavailable';
 /**
  * Ask for biometrics (falling back to the device PIN/pattern). Devices with
  * no biometric hardware or nothing enrolled report `unavailable`, which
- * callers treat as allowed — same behaviour as the Flutter app.
+ * callers treat as allowed, so the app still works on devices without it.
  */
 export async function authenticate(reason: string): Promise<AuthOutcome> {
   try {

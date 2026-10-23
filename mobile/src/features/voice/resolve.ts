@@ -18,8 +18,8 @@ export const targetFromContact = (c: DeviceContact): Target => ({
 
 /**
  * Turn the recipient the intent service extracted into something the
- * backend can pay. Spoken names are looked up in the phone book — the
- * Flutter app sent them to the backend as "+91<name>", which always failed.
+ * backend can pay. Spoken names are looked up in the phone book; the backend
+ * only knows phone numbers and UPI IDs.
  */
 export async function resolveRecipient(
   outcome: Pick<VoiceOutcome, 'recipient' | 'recipientKind'>,

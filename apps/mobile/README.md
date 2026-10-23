@@ -9,7 +9,7 @@ This app replaces the original Flutter client, which is preserved on the `flutte
 ```bash
 cd apps/mobile
 npm install
-cp .env.example .env.local   # set EXPO_PUBLIC_API_HOST to the machine running docker-compose
+cp .env.example .env.local   # set EXPO_PUBLIC_API_HOST to the machine running the services
 ```
 
 The app uses native modules (speech recognition, biometrics, camera, contacts), so it needs a development build. Expo Go will not work:

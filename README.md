@@ -58,12 +58,20 @@ The platform supports manual and voice-first payment interactions. Voice input i
 
 ```
 EchoPay/
-├── mobile/                       # React Native (Expo) app
-├── Backend/                      # Flask voice and ML service
-├── DJBackend/                    # Django transaction backend
-├── Rasa/                         # Rasa conversational service
-├── echopay/                      # Next.js landing page
-├── docker-compose.yml
+├── apps/
+│   ├── mobile/                   # React Native (Expo) app
+│   └── web/                      # Next.js landing page
+├── services/
+│   ├── api/                      # Django: auth, accounts, transfers, requests
+│   ├── voice/                    # Flask: intent classification + entities
+│   │   ├── app/                  #   server
+│   │   ├── models/               #   trained intent + NER models
+│   │   └── training/             #   notebooks and dataset
+│   ├── chatbot/                  # Rasa conversational fallback
+│   └── docker-compose.yml        # runs api, voice, chatbot + PostgreSQL
+├── docs/
+│   ├── api.md                    # Django API reference
+│   └── voice-api.md              # Flask voice API reference
 └── README.md
 ```
 
@@ -79,43 +87,45 @@ cd EchoPay
 ### 2. Start Backend Services
 
 ```bash
-docker-compose build
-docker-compose up -d
-docker-compose ps
+cd services
+docker compose up -d --build
+docker compose ps
 ```
 
 ### 3. Run the Mobile App
 
 ```bash
-cd mobile
+cd apps/mobile
 npm install
 cp .env.example .env.local   # set EXPO_PUBLIC_API_HOST
 npm run android              # builds a development build and starts Metro
 ```
 
-`EXPO_PUBLIC_API_HOST` is the machine running docker-compose:
+`EXPO_PUBLIC_API_HOST` is the machine running the services:
 
 - Android emulator: `10.0.2.2`
 - iOS simulator: `localhost` or host IP
 - Physical device: host machine LAN IP
 
-See [`mobile/README.md`](mobile/README.md) for tests, project layout and release builds.
+See [`apps/mobile/README.md`](apps/mobile/README.md) for tests, project layout and release builds.
 
 ### 4. Landing Page (optional)
 
 ```bash
-cd echopay
+cd apps/web
 npm install
 npm run dev
 ```
 
 ## Docker Operations
 
+Run these from `services/`:
+
 ```bash
-docker-compose logs -f
-docker-compose restart
-docker-compose down
-docker-compose up -d --build
+docker compose logs -f
+docker compose restart
+docker compose down
+docker compose up -d --build
 ```
 
 ## Service Endpoints
@@ -126,8 +136,9 @@ docker-compose up -d --build
 
 ## API Documentation
 
-- Django API documentation: [`DJBackend/API_DOCUMENTATION.md`](DJBackend/API_DOCUMENTATION.md)
-- Flask API documentation: [`Backend/API_DOCUMENTATION.md`](Backend/API_DOCUMENTATION.md)
+- Django API: [`docs/api.md`](docs/api.md)
+- Flask voice API: [`docs/voice-api.md`](docs/voice-api.md)
+- Retraining the intent model: open `services/voice/training/model_training.ipynb`; it writes the model files into `services/voice/models/intent/`.
 
 ## Known Limitations
 

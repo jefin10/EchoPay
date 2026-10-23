@@ -25,7 +25,7 @@ services:
   # Django Backend (UPI Transaction Service)
   django:
     build:
-      context: ./DJBackend
+      context: ./api
       dockerfile: Dockerfile
     container_name: echopay_django
     environment:
@@ -43,7 +43,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./DJBackend:/app
+      - ./api:/app
     networks:
       - echopay_network
     healthcheck:
@@ -56,7 +56,7 @@ services:
   # Flask Backend (Intent Classification & Voice Assistant)
   flask:
     build:
-      context: ./Backend
+      context: ./voice
       dockerfile: Dockerfile
     container_name: echopay_flask
     environment:
@@ -79,13 +79,13 @@ services:
   # Rasa Conversational AI
   rasa:
     build:
-      context: ./Rasa
+      context: ./chatbot
       dockerfile: Dockerfile
     container_name: echopay_rasa
     ports:
       - "5005:5005"
     volumes:
-      - ./Rasa/models:/app/models
+      - ./chatbot/models:/app/models
     command: run --enable-api --cors "*" --debug
     networks:
       - echopay_network

@@ -207,4 +207,4 @@ Success response:
 
 - Phone number inputs are normalized by backend utility methods.
 - Error status codes vary by failure reason (400, 403, 404, 500).
-- For exact payload handling and validation behavior, refer to `accounts/views.py`.
+- For exact payload handling and validation behavior, refer to `services/api/accounts/views.py`.
